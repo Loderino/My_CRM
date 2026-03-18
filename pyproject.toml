@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "freelance_crm"
+version = "0.0.0"
+description = "Персональная CRM для фрилансера"
+authors = [{name = "Kirill Savostin", email = "savostin.c@yandex.ru"}]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "sqlalchemy==2.0.48",
+    "alembic==1.18.4",
+    "asyncpg==0.31.0",
+    "pydantic-settings==2.13.1",
+    "python-dotenv==1.2.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "black", "flake8"]  # для разработки
