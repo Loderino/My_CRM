@@ -1,0 +1,9 @@
+<div class="widget" data-widget="{{ widget_type }}">
+    <div class="widget-header">
+        <h3>{{ widget_title }}</h3>
+        <button class="widget-close" onclick="removeWidget(this)">✕</button>
+    </div>
+    <div class="widget-content">
+        {% block widget_content %}{% endblock %}
+    </div>
+</div>

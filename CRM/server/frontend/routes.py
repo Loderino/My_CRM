@@ -9,6 +9,9 @@ async def home(request: Request):
         "pages/index.html",
         {
             "request": request,
-            "title": "Главная - CRM"
+            "title": "Главная - CRM",
+            "total_earned": 127.5,
+            "recent_orders": [...],
+            "deadlines": [...]
         }
     )

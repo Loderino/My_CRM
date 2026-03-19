@@ -1,23 +1,37 @@
 {% extends "base.html" %}
 
-{% block title %}Главная - CRM{% endblock %}
-
 {% block content %}
-<h1>Главная страница</h1>
-
-<div class="demo-card">
-    <h3>Последние заказы</h3>
-    <p>Здесь будет список заказов</p>
+<div class="dashboard-header">
+    <h1>Рабочий стол</h1>
+    <button class="add-widget-btn" onclick="showWidgetSelector()">+ Добавить виджет</button>
 </div>
 
-<div class="demo-card">
-    <h3>Последние клиенты</h3>
-    <p>Здесь будет список клиентов</p>
+<div class="widgets-grid" id="widgets-container">
+    <!-- Включаем нужные виджеты -->
+    {% with amount=total_earned, widget_title="💰 Заработано" %}
+        {% include "components/widgets/earned.html" %}
+    {% endwith %}
+    {% with widget_title="📦 Последние заказы" %}
+        {% include "components/widgets/recent_orders.html" %}
+    {% endwith %}
+    {% with widget_title="⏰ Дедлайны" %}
+        {% include "components/widgets/deadlines.html" %}
+    {% endwith %}
 </div>
 
-<div class="demo-card">
-    <h3>Ближайшие дедлайны</h3>
-    <p>Завтра: Сайт для магазина</p>
-    <p>Через 3 дня: Telegram bot</p>
+<!-- Модальное окно выбора виджета (скрыто по умолчанию) -->
+<div id="widget-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3>Выберите виджет</h3>
+        <div class="widget-options">
+            <div class="widget-option" onclick="addWidget('earned')">💰 Заработано</div>
+            <div class="widget-option" onclick="addWidget('recent-orders')">📦 Последние заказы</div>
+            <div class="widget-option" onclick="addWidget('deadlines')">⏰ Дедлайны</div>
+            <div class="widget-option" onclick="addWidget('clients')">👥 Новые клиенты</div>
+            <div class="widget-option" onclick="addWidget('tasks')">✅ Текущие задачи</div>
+        </div>
+        <button class="modal-close" onclick="hideWidgetSelector()">Закрыть</button>
+    </div>
 </div>
+
 {% endblock %}
