@@ -10,6 +10,7 @@ class Client(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=True)
     contacts = Column(JSON, default={})
+    notes = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     orders = relationship("Order", back_populates="client", cascade="all, delete-orphan")
