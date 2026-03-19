@@ -1,0 +1,54 @@
+from datetime import date, timedelta
+from sqlalchemy import select, and_
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from CRM.database.models import Order
+from CRM.database.repositories.base import BaseRepository
+
+
+class OrderRepository(BaseRepository[Order]):
+    """Репозиторий для работы с заказами"""
+    
+    def __init__(self, session: AsyncSession):
+        super().__init__(session, Order)
+    
+    async def get_by_client(self, client_id: int) -> list[Order]:
+        """Все заказы клиента"""
+        result = await self.session.execute(
+            select(Order)
+            .where(Order.client_id == client_id)
+            .order_by(Order.created_date.desc())
+        )
+        return result.scalars().all()
+    
+    async def get_active_orders(self) -> list[Order]:
+        """Заказы без дедлайна или с будущим дедлайном"""
+        from datetime import date
+        
+        result = await self.session.execute(
+            select(Order)
+            .where(
+                (Order.deadline_date >= date.today()) | 
+                (Order.deadline_date.is_(None))
+            )
+            .order_by(Order.deadline_date)
+        )
+        return result.scalars().all()
+    
+    async def get_upcoming_deadlines(self, days: int = 7) -> list[Order]:
+        """Заказы с ближайшими дедлайнами"""
+        today = date.today()
+        deadline_limit = today + timedelta(days=days)
+        
+        result = await self.session.execute(
+            select(Order)
+            .where(
+                and_(
+                    Order.deadline_date.isnot(None),
+                    Order.deadline_date <= deadline_limit,
+                    Order.deadline_date >= today
+                )
+            )
+            .order_by(Order.deadline_date)
+        )
+        return result.scalars().all()
