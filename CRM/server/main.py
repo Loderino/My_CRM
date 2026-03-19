@@ -10,10 +10,10 @@ async def run_server(host: str = "127.0.0.1", port: int = 8000):
     
     app.mount(
         "/static", 
-        StaticFiles(directory="CRM/server/frontend/static"), 
+        StaticFiles(directory="CRM/server/frontend/static"),
         name="static"
     )
-    templates = Jinja2Templates(directory="server/frontend/templates")
+    templates = Jinja2Templates(directory="CRM/server/frontend/templates")
     app.state.templates = templates
     app.include_router(frontend_router)
     
