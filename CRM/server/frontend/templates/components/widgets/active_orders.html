@@ -1,0 +1,11 @@
+{% extends "components/widgets/base_widget.html" %}
+
+{% block widget_content %}
+<ul class="widget-list">
+    {% for order in orders %}
+        <li>{{ order.title }} - {{ order.price }} ₽</li>
+    {% else %}
+        <li class="empty-list">Нет заказов</li>
+    {% endfor %}
+</ul>
+{% endblock %}

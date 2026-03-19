@@ -8,11 +8,11 @@
 
 <div class="widgets-grid" id="widgets-container">
     <!-- Включаем нужные виджеты -->
-    {% with amount=total_earned, widget_title="💰 Заработано" %}
+    {% with widget_title="💰 Заработано", amount=total_earned %}
         {% include "components/widgets/earned.html" %}
     {% endwith %}
-    {% with widget_title="📦 Последние заказы" %}
-        {% include "components/widgets/recent_orders.html" %}
+    {% with widget_title="📦 Активные заказы", orders=recent_orders %}
+        {% include "components/widgets/active_orders.html" %}
     {% endwith %}
     {% with widget_title="⏰ Дедлайны" %}
         {% include "components/widgets/deadlines.html" %}
