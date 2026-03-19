@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Новый клиент - CRM{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>➕ Новый клиент</h1>
+    <a href="/clients" class="btn btn-secondary">← К списку</a>
+</div>
+
+<div class="form-container">
+    <form method="post" action="/clients/create" class="client-form">
+        <!-- Основная информация -->
+        <div class="form-group">
+            <label for="name">Имя / Название компании *</label>
+            <input type="text" id="name" name="name" required class="form-control">
+        </div>
+
+        <!-- Контакты (динамические) -->
+        <div class="form-section">
+            <h3>📞 Контакты</h3>
+            <div id="contacts-container">
+                <div class="contact-row">
+                    <select name="contact_type[]" class="contact-type">
+                        <option value="phone">Телефон</option>
+                        <option value="email">Email</option>
+                        <option value="telegram">Telegram</option>
+                        <option value="whatsapp">WhatsApp</option>
+                        <option value="avito">Avito</option>
+                        <option value="vk">VK</option>
+                        <option value="other">Другое</option>
+                    </select>
+                    <input type="text" name="contact_value[]" class="contact-value" placeholder="Контакт">
+                    <button type="button" class="btn-remove-contact" onclick="removeContact(this)">✕</button>
+                </div>
+            </div>
+            <button type="button" class="btn-add-contact" onclick="addContactRow()">+ Добавить контакт</button>
+        </div>
+
+        <!-- Дополнительная информация -->
+        <div class="form-group">
+            <label for="notes">Заметки</label>
+            <textarea id="notes" name="notes" rows="3" class="form-control"></textarea>
+        </div>
+
+        <!-- Кнопки -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 Сохранить</button>
+            <button type="reset" class="btn btn-secondary">🔄 Очистить</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Функции для динамического добавления контактов
+function addContactRow() {
+    const container = document.getElementById('contacts-container');
+    const newRow = document.createElement('div');
+    newRow.className = 'contact-row';
+    newRow.innerHTML = `
+        <select name="contact_type[]" class="contact-type">
+            <option value="phone">Телефон</option>
+            <option value="email">Email</option>
+            <option value="telegram">Telegram</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="avito">Avito</option>
+            <option value="vk">VK</option>
+            <option value="other">Другое</option>
+        </select>
+        <input type="text" name="contact_value[]" class="contact-value" placeholder="Контакт">
+        <button type="button" class="btn-remove-contact" onclick="removeContact(this)">✕</button>
+    `;
+    container.appendChild(newRow);
+}
+
+function removeContact(button) {
+    const row = button.closest('.contact-row');
+    // Не удалять, если это последняя строка
+    if (document.querySelectorAll('.contact-row').length > 1) {
+        row.remove();
+    }
+}
+</script>
+{% endblock %}

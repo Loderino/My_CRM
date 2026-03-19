@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Request, Depends
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Request, Depends, Form
+from fastapi.responses import HTMLResponse, RedirectResponse
 
 from CRM.database.repositories import ClientRepository, OrderRepository
 from CRM.server.api.dependencies import get_repository
@@ -24,3 +24,35 @@ async def home(
             "deadlines": [...]
         }
     )
+
+@router.get("/clients/create", response_class=HTMLResponse)
+async def create_client_page(request: Request):
+    return request.app.state.templates.TemplateResponse(
+        "pages/clients/create.html",
+        {"request": request}
+    )
+
+# Обработка формы
+@router.post("/clients/create")
+async def create_client(
+    request: Request,
+    name: str = Form(...),
+    contact_type: list[str] = Form([]),
+    contact_value: list[str] = Form([]),
+    notes: str = Form(""),
+    client_repo: ClientRepository = Depends(get_repository(ClientRepository))
+    ):
+    contacts = {}
+    for t, v in zip(contact_type, contact_value):
+        if v.strip():  # только непустые
+            contacts[t] = v.strip()
+
+    # Создаём клиента
+    client = await client_repo.create(
+        name=name,
+        contacts=contacts,
+        notes=notes
+    )
+
+    # Перенаправляем на страницу клиента или список
+    return RedirectResponse(url="/clients", status_code=303)
