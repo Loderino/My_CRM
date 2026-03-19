@@ -1,5 +1,8 @@
+import asyncio
+import sys
 from CRM.core.database_setup import init_db, verify_database
 from CRM.core.engine import async_engine
+from CRM.server.main import run_server
 
 
 def startup():
@@ -15,10 +18,6 @@ def startup():
         return False
     
     print("✅ Подключение к БД установлено")
-    
-    # Здесь будут запускаться другие службы
-    # - API сервер
-    # - Фоновые задачи
     return True
 
 
@@ -29,19 +28,21 @@ async def shutdown():
     print("✅ Соединения с БД закрыты")
 
 
-if __name__ == "__main__":
-    import asyncio
-    import sys
+async def main():
+    """Главная асинхронная функция"""
+    if not startup():
+        print("\n❌ Ошибка инициализации. Завершение работы.")
+        sys.exit(1)
+    
+    print("\n🚀 Запуск веб-сервера на http://127.0.0.1:8000")
     try:
-        if startup():
-            print("\n💡 Приложение готово. Здесь будет основной цикл.")
-        else:
-            print("\n❌ Ошибка инициализации. Завершение работы.")
-            sys.exit(1)
-            
+        await run_server()
     except KeyboardInterrupt:
         print("\n\n⚠️ Получен сигнал прерывания")
     finally:
-        # Очистка ресурсов
-        asyncio.run(shutdown())
-        print("👯 До свидания!")
+        await shutdown()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+    print("👋 До свидания!")
