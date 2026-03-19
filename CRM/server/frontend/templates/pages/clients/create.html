@@ -10,18 +10,15 @@
 
 <div class="form-container">
     <form method="post" action="/clients/create" class="client-form">
-        <!-- Основная информация -->
         <div class="form-group">
             <label for="name">Имя / Название компании *</label>
             <input type="text" id="name" name="name" required class="form-control">
         </div>
-
-        <!-- Контакты (динамические) -->
         <div class="form-section">
             <h3>📞 Контакты</h3>
             <div id="contacts-container">
                 <div class="contact-row">
-                    <select name="contact_type[]" class="contact-type">
+                    <select name="contact_type" class="contact-type">
                         <option value="phone">Телефон</option>
                         <option value="email">Email</option>
                         <option value="telegram">Telegram</option>
@@ -30,7 +27,7 @@
                         <option value="vk">VK</option>
                         <option value="other">Другое</option>
                     </select>
-                    <input type="text" name="contact_value[]" class="contact-value" placeholder="Контакт">
+                    <input type="text" name="contact_value" class="contact-value" placeholder="Контакт">
                     <button type="button" class="btn-remove-contact" onclick="removeContact(this)">✕</button>
                 </div>
             </div>
@@ -60,7 +57,7 @@ function addContactRow() {
     const newRow = document.createElement('div');
     newRow.className = 'contact-row';
     newRow.innerHTML = `
-        <select name="contact_type[]" class="contact-type">
+        <select name="contact_type" class="contact-type">
             <option value="phone">Телефон</option>
             <option value="email">Email</option>
             <option value="telegram">Telegram</option>
@@ -69,7 +66,7 @@ function addContactRow() {
             <option value="vk">VK</option>
             <option value="other">Другое</option>
         </select>
-        <input type="text" name="contact_value[]" class="contact-value" placeholder="Контакт">
+        <input type="text" name="contact_value" class="contact-value" placeholder="Контакт">
         <button type="button" class="btn-remove-contact" onclick="removeContact(this)">✕</button>
     `;
     container.appendChild(newRow);

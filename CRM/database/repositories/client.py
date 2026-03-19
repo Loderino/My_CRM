@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 from typing import Optional
-from sqlalchemy import select, String, func
+from sqlalchemy import select, or_, String, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from CRM.database.models import Client
 from CRM.database.repositories.base import BaseRepository
-
+from CRM.database.models import Order
 
 class ClientRepository(BaseRepository[Client]):
     """Репозиторий для работы с клиентами"""
@@ -40,3 +40,57 @@ class ClientRepository(BaseRepository[Client]):
             .order_by(Client.created_at.desc())
         )
         return result.scalars().all()
+    
+    async def get_filtered(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        has_orders: Optional[bool] = None,
+        search: Optional[str] = None
+    ) -> tuple[list[Client], int]:
+        """
+        Получить отфильтрованный список клиентов с пагинацией
+        Возвращает (список, общее_количество)
+        """
+        query = select(Client)
+    
+        if search:
+            search_filter = or_(
+                Client.name.ilike(f"%{search}%"),
+                Client.contacts.cast(String).ilike(f"%{search}%")
+            )
+            query = query.where(search_filter)
+        
+        if has_orders is not None:
+            if has_orders:
+                query = query.where(Client.orders.any())
+            else:
+                query = query.where(~Client.orders.any())
+        
+        # Сначала получаем общее количество
+        count_query = select(func.count()).select_from(query.subquery())
+        total = await self.session.execute(count_query)
+        total = total.scalar()
+        
+        # Потом данные с пагинацией
+        result = await self.session.execute(
+            query.offset(skip).limit(limit)
+        )
+        clients = result.scalars().all()
+        
+        return clients, total
+
+    async def get_order_stats(self, client_id: int) -> dict:
+        """Получить статистику по заказам клиента"""
+        result = await self.session.execute(
+            select(
+                func.count(Order.id).label('count'),
+                func.sum(Order.contract_price).label('sum')
+            ).where(Order.client_id == client_id)
+        )
+        row = result.first()
+        
+        return {
+            "orders_count": row.count or 0,
+            "orders_sum": float(row.sum or 0)
+        }

@@ -38,6 +38,7 @@ class BaseRepository(Generic[ModelType]):
         self.session.add(obj)
         await self.session.flush()
         await self.session.refresh(obj)
+        await self.session.commit()
         return obj
     
     async def update(
@@ -56,6 +57,7 @@ class BaseRepository(Generic[ModelType]):
             .where(self.model.id == _id)
             .values(**update_data)
         )
+        await self.session.commit()
         return await self.get_by_id(id)
     
     async def delete(self, id: int) -> bool:
@@ -63,6 +65,7 @@ class BaseRepository(Generic[ModelType]):
         result = await self.session.execute(
             delete(self.model).where(self.model.id == id)
         )
+        await self.session.commit()
         return result.rowcount > 0
     
     async def count(self) -> int:
