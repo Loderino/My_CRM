@@ -1,0 +1,48 @@
+/* Шапка */
+.header {
+    background: white;
+    border-bottom: 2px solid var(--primary);
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.nav-link {
+    color: var(--primary);
+    text-decoration: none;
+    margin-left: 1.5rem;
+}
+
+.nav-link:hover {
+    color: #3498db;
+}
+
+/* Основной контент */
+.main {
+    min-height: 400px;
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+/* Подвал */
+.footer {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    border-top: 1px solid #ddd;
+}

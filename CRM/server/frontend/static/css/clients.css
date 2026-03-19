@@ -1,0 +1,196 @@
+/* === Страницы клиентов === */
+
+.clients-page {
+    padding: 20px 0;
+}
+
+/* Заголовок и кнопка */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+    color: #2c3e50;
+}
+
+/* панель поиска */
+.search-section {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.search-section .search-box {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.search-section .btn {
+    padding: 0.75rem 1.5rem;
+    white-space: nowrap;
+}
+
+/* Панель фильтров */
+.filters-panel {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filters-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    min-width: 180px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 13px;
+    color: #7f8c8d;
+}
+
+/* Таблица */
+.table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 24px;
+}
+
+.clients-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.clients-table th {
+    background: #f8f9fa;
+    padding: 15px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.clients-table td {
+    padding: 15px 12px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.clients-table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.clients-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.client-id {
+    color: #6c757d;
+    font-size: 13px;
+}
+
+.client-name {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.note-indicator {
+    margin-left: 8px;
+    color: #f39c12;
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+/* Бейджи контактов */
+.contacts-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.contact-badge {
+    background: #e9ecef;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #495057;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.contact-badge i {
+    font-size: 12px;
+}
+
+.contact-badge.more {
+    background: #2c3e50;
+    color: white;
+}
+
+.orders-count {
+    font-weight: 600;
+    color: #2c3e50;
+    text-align: center;
+}
+
+.orders-sum {
+    font-weight: 600;
+    color: #27ae60;
+}
+
+.registration-date {
+    color: #7f8c8d;
+    font-size: 13px;
+}
+
+/* Кнопки действий */
+.actions {
+    white-space: nowrap;
+    text-align: right;
+}
+
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    color: #6c757d;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-icon:hover {
+    background: #e9ecef;
+    color: #2c3e50;
+}
+
+/* Пустая таблица */
+.empty-table {
+    text-align: center;
+    padding: 60px 20px;
+    color: #95a5a6;
+}
+
+.empty-table p {
+    margin: 16px 0;
+    font-size: 16px;
+}

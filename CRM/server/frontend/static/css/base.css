@@ -1,0 +1,31 @@
+/* === Базовые сбросы и переменные === */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f0f2f5;
+    color: #2c3e50;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Переменные */
+:root {
+    --primary: #2c3e50;
+    --primary-dark: #34495e;
+    --secondary: #6c757d;
+    --success: #27ae60;
+    --danger: #dc3545;
+    --warning: #f39c12;
+    --light: #f8f9fa;
+    --dark: #343a40;
+}

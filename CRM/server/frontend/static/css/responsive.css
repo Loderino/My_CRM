@@ -1,0 +1,34 @@
+/* === Адаптивность === */
+@media (max-width: 768px) {
+    .filters-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    .clients-table {
+        font-size: 14px;
+    }
+    
+    .contacts-badges {
+        flex-direction: column;
+        gap: 3px;
+    }
+    
+    .pagination-panel {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+    
+    .search-section {
+        flex-direction: column;
+    }
+    
+    .search-section .btn {
+        width: 100%;
+    }
+}
