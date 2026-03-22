@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, Form, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -101,3 +102,40 @@ async def create_client(
     )
     # Перенаправляем на страницу клиента или список
     return RedirectResponse(url="/clients", status_code=303)
+
+
+@router.get("/orders", response_class=HTMLResponse)
+async def orders_list(
+    request: Request,
+    page: int = Query(1, ge=1),
+    per_page: int = Query(10, ge=1, le=100),
+    search: Optional[str] = Query(None),
+    order_repo: OrderRepository = Depends(get_repository(OrderRepository))
+):
+    skip = (page - 1) * per_page
+    
+    # Получаем заказы с пагинацией
+    orders, total = await order_repo.get_filtered(
+        skip=skip,
+        limit=per_page,
+        search=search
+    )
+    
+    # Для каждого заказа подгружаем клиента
+    for order in orders:
+        await order_repo.session.refresh(order, attribute_names=['client'])
+    
+    return request.app.state.templates.TemplateResponse(
+        "pages/orders/index.html",
+        {
+            "request": request,
+            "orders": orders,
+            "total_orders": total,
+            "page": page,
+            "per_page": per_page,
+            "total_pages": (total + per_page - 1) // per_page,
+            "search_query": search or "",
+            "today": datetime.now().date(),
+            "timedelta": timedelta
+        }
+    )

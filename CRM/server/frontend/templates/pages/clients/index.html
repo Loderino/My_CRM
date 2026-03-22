@@ -4,6 +4,8 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+<link rel="stylesheet" href="/static/css/clients.css">
+<link rel="stylesheet" href="/static/css/forms.css">
 {% endblock %}
 
 {% block content %}
@@ -119,10 +121,10 @@
                     <td class="registration-date">{{ client.created_at.strftime('%d.%m.%Y') if client.created_at else '-' }}</td>
                     <td class="actions">
                         <a href="/clients/{{ client.id }}" class="btn-icon" title="Просмотр">
-                            <i class="fas fa-eye">📑</i>
+                            <i class="fas fa-eye"></i>
                         </a>
                         <a href="/clients/{{ client.id }}/edit" class="btn-icon" title="Редактировать">
-                            <i class="fas fa-edit">✏️</i>
+                            <i class="fas fa-edit"></i>
                         </a>
                     </td>
                 </tr>
@@ -177,57 +179,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-// Клик по строке клиента
-document.querySelectorAll('.client-row').forEach(row => {
-    row.addEventListener('click', function(e) {
-        // Не переходить по ссылке, если клик по кнопке
-        if (e.target.closest('.btn-icon, .contact-badge')) return;
-        const clientId = this.dataset.clientId;
-        window.location.href = `/clients/${clientId}`;
-    });
-});
-
-// Применение фильтров
-function applyFilters() {
-    const search = document.getElementById('searchInput').value;
-    const period = document.getElementById('periodFilter').value;
-    const orders = document.getElementById('ordersFilter').value;
-    const perPage = document.getElementById('perPageSelect').value;
-    
-    window.location.href = `/clients?page=1&per_page=${perPage}&search=${encodeURIComponent(search)}&period=${period}&orders=${orders}`;
-}
-
-// Сброс фильтров
-function resetFilters() {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('periodFilter').value = 'all';
-    document.getElementById('ordersFilter').value = 'all';
-    applyFilters();
-}
-
-// Изменение количества на странице
-function changePerPage(value) {
-    const search = document.getElementById('searchInput').value;
-    const period = document.getElementById('periodFilter').value;
-    const orders = document.getElementById('ordersFilter').value;
-    
-    window.location.href = `/clients?page=1&per_page=${value}&search=${encodeURIComponent(search)}&period=${period}&orders=${orders}`;
-}
-
-// Поиск
-function applySearch() {
-    const search = document.getElementById('searchInput').value;
-    const perPage = document.getElementById('perPageSelect').value;
-    
-    window.location.href = `/clients?page=1&per_page=${perPage}&search=${encodeURIComponent(search)}`;
-}
-
-// Поиск по Enter в поле ввода
-document.getElementById('searchInput').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        applySearch();
-    }
-});
-</script>
+<script src="/static/js/pages/clients.js"></script>
 {% endblock %}

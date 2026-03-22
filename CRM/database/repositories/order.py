@@ -1,5 +1,6 @@
+from typing import Optional
 from datetime import date, timedelta
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, or_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from CRM.database.models import Order
@@ -52,3 +53,35 @@ class OrderRepository(BaseRepository[Order]):
             .order_by(Order.deadline_date)
         )
         return result.scalars().all()
+    
+    async def get_filtered(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        search: Optional[str] = None
+    ) -> tuple[list[Order], int]:
+        """
+        Получить отфильтрованный список клиентов с пагинацией
+        Возвращает (список, общее_количество)
+        """
+        query = select(Order)
+    
+        if search:
+            search_filter = or_(
+                Order.title.ilike(f"%{search}%"),
+                Order.description.ilike(f"%{search}%")
+            )
+            query = query.where(search_filter)
+        
+        # Сначала получаем общее количество
+        count_query = select(func.count()).select_from(query.subquery())
+        total = await self.session.execute(count_query)
+        total = total.scalar()
+        
+        # Потом данные с пагинацией
+        result = await self.session.execute(
+            query.offset(skip).limit(limit)
+        )
+        clients = result.scalars().all()
+        
+        return clients, total

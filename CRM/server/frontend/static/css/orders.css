@@ -1,0 +1,205 @@
+/* Страница заказов */
+.orders-page {
+    padding: 20px 0;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+    color: var(--primary);
+}
+
+/* панель поиска */
+.search-section {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.search-section .search-box {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.search-section .btn {
+    padding: 0.75rem 1.5rem;
+    white-space: nowrap;
+}
+
+/* Панель фильтров */
+.filters-panel {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filters-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    min-width: 180px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 13px;
+    color: #7f8c8d;
+}
+
+/* Таблица заказов */
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.orders-table th {
+    background: var(--light);
+    padding: 15px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.orders-table td {
+    padding: 15px 12px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.orders-table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.orders-table tbody tr:hover {
+    background-color: var(--light);
+}
+
+.order-id {
+    color: var(--secondary);
+    font-size: 13px;
+}
+
+.order-title strong {
+    color: var(--primary);
+}
+
+.order-description-preview {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
+}
+
+/* Клиент */
+.client-link {
+    color: #2c3e50;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.client-link:hover {
+    color: #3498db;
+    text-decoration: underline;
+}
+
+/* Дедлайн */
+.deadline-date {
+    font-size: 13px;
+}
+
+.deadline-overdue .deadline-date {
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.deadline-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-left: 8px;
+}
+
+.deadline-badge.overdue {
+    background: #fee2e2;
+    color: #dc3545;
+}
+
+.deadline-badge.soon {
+    background: #fff3cd;
+    color: #ffc107;
+}
+
+/* Прогресс */
+.progress-bar-container {
+    position: relative;
+    width: 100px;
+    background: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 24px;
+}
+
+.progress-bar {
+    background: #27ae60;
+    height: 100%;
+    transition: width 0.3s;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 11px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+/* Инструменты */
+.tools-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.tool-badge {
+    background: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    color: #495057;
+}
+
+.order-sum {
+    font-weight: 600;
+    color: #27ae60;
+}
+
+/* Пустая таблица */
+.empty-table {
+    text-align: center;
+    padding: 60px 20px;
+    color: #95a5a6;
+}
+
+.empty-table p {
+    margin: 16px 0;
+    font-size: 16px;
+}

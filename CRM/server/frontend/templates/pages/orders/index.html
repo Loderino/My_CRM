@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Заказы - CRM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+<link rel="stylesheet" href="/static/css/orders.css">
+<link rel="stylesheet" href="/static/css/forms.css">
+{% endblock %}
+
+{% block content %}
+<div class="orders-page">
+    <div class="page-header">
+        <h1>📦 Заказы</h1>
+        <a href="/orders/create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Новый заказ
+        </a>
+    </div>
+
+    <!-- Поиск -->
+    <div class="filters-panel">
+        <div class="search-section">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="form-control" 
+                    placeholder="Поиск по названию или клиенту..."
+                    value="{{ search_query or '' }}"
+                >
+            </div>
+            <button class="btn btn-primary" onclick="applySearch()">
+                <i class="fas fa-search"></i> Найти
+            </button>
+        </div>
+        
+        <!-- Фильтры (скрыты, но оставлены для будущего) -->
+        <div class="filters-row" style="display: none;">
+            <div class="filter-group">
+                <label>Статус:</label>
+                <select id="statusFilter" class="form-control">
+                    <option value="all">Все</option>
+                    <option value="active">В работе</option>
+                    <option value="completed">Завершены</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица заказов -->
+    <div class="table-container">
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Клиент</th>
+                    <th>Дедлайн</th>
+                    <th>Прогресс</th>
+                    <th>Инструменты</th>
+                    <th>Сумма</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr class="order-row" data-order-id="{{ order.id }}">
+                    <td class="order-id">#{{ order.id }}</td>
+                    <td class="order-title">
+                        <strong>{{ order.title }}</strong>
+                        {% if order.description %}
+                            <div class="order-description-preview">{{ order.description[:80] }}{% if order.description|length > 80 %}...{% endif %}</div>
+                        {% endif %}
+                    </td>
+                    <td class="client-info">
+                        <a href="/clients/{{ order.client.id }}" class="client-link">
+                            {% if order.client.name %}
+                                {{ order.client.name }}
+                            {% elif order.client.contacts.telegram %}
+                                @{{ order.client.contacts.telegram }}
+                            {% elif order.client.contacts.phone %}
+                                {{ order.client.contacts.phone }}
+                            {% else %}
+                                Клиент #{{ order.client.id }}
+                            {% endif %}
+                        </a>
+                    </td>
+                    <td class="deadline {% if order.deadline_date and order.deadline_date < today %}deadline-overdue{% endif %}">
+                        {% if order.deadline_date %}
+                            <span class="deadline-date">
+                                {{ order.deadline_date.strftime('%d.%m.%Y') }}
+                            </span>
+                            {% if order.deadline_date < today %}
+                                <span class="deadline-badge overdue">Просрочен</span>
+                            {% elif order.deadline_date <= today + timedelta(days=3) %}
+                                <span class="deadline-badge soon">Скоро</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">Не указан</span>
+                        {% endif %}
+                    </td>
+                    <td class="progress">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: {{ order.progress or 0 }}%"></div>
+                            <span class="progress-text">{{ order.progress or 0 }}%</span>
+                        </div>
+                    </td>
+                    <td class="tools">
+                        {% if order.main_languages %}
+                            <div class="tools-badges">
+                                {% for lang in order.main_languages %}
+                                    <span class="tool-badge">{{ lang }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="order-sum">
+                        {% if order.contract_price %}
+                            <strong>{{ "{:,.0f}".format(order.contract_price) }} ₽</strong>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="actions">
+                        <a href="/orders/{{ order.id }}" class="btn-icon" title="Просмотр">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="/orders/{{ order.id }}/edit" class="btn-icon" title="Редактировать">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="empty-table">
+                        <i class="fas fa-box-open" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;"></i>
+                        <p>Нет заказов</p>
+                        <a href="/orders/create" class="btn btn-primary">Добавить первый заказ</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Пагинация -->
+    <div class="pagination-panel">
+        <div class="pagination-info">
+            Показано {{ orders|length }} из {{ total_orders }} заказов
+        </div>
+        
+        <div class="pagination-controls">
+            {% if page > 1 %}
+                <a href="?page={{ page-1 }}&per_page={{ per_page }}&search={{ search_query }}" 
+                   class="pagination-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            {% endif %}
+            
+            <span class="page-info">Страница {{ page }} из {{ total_pages }}</span>
+            
+            {% if page < total_pages %}
+                <a href="?page={{ page+1 }}&per_page={{ per_page }}&search={{ search_query }}"
+                   class="pagination-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
+        
+        <div class="per-page-selector">
+            <label>Показывать по:</label>
+            <select id="perPageSelect" class="form-control" onchange="changePerPage(this.value)">
+                <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+                <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
+                <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+            </select>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/pages/orders.js"></script>
+{% endblock %}
