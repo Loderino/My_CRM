@@ -5,7 +5,6 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
 <link rel="stylesheet" href="/static/css/orders.css">
-<link rel="stylesheet" href="/static/css/forms.css">
 {% endblock %}
 
 {% block content %}
@@ -107,10 +106,10 @@
                         </div>
                     </td>
                     <td class="tools">
-                        {% if order.main_languages %}
+                        {% if order.instruments %}
                             <div class="tools-badges">
-                                {% for lang in order.main_languages %}
-                                    <span class="tool-badge">{{ lang }}</span>
+                                {% for tool in order.instruments %}
+                                    <span class="tool-badge">{{ tool }}</span>
                                 {% endfor %}
                             </div>
                         {% else %}

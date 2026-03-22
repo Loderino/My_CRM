@@ -5,7 +5,6 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
 <link rel="stylesheet" href="/static/css/clients.css">
-<link rel="stylesheet" href="/static/css/forms.css">
 {% endblock %}
 
 {% block content %}
@@ -151,7 +150,7 @@
             {% if page > 1 %}
                 <a href="?page={{ page-1 }}&per_page={{ per_page }}&search={{ search_query }}&period={{ period }}&orders={{ orders_filter }}" 
                    class="pagination-btn">
-                    ⬅️
+                    <i class="fas fa-chevron-left"></i>
                 </a>
             {% endif %}
             
@@ -160,7 +159,7 @@
             {% if page < total_pages %}
                 <a href="?page={{ page+1 }}&per_page={{ per_page }}&search={{ search_query }}&period={{ period }}&orders={{ orders_filter }}"
                    class="pagination-btn">
-                    ➡️
+                    <i class="fas fa-chevron-right"></i>
                 </a>
             {% endif %}
         </div>
