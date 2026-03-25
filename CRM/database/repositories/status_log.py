@@ -31,13 +31,6 @@ class StatusLogRepository(BaseRepository[StatusLog]):
         )
         return result.scalar_one_or_none()
     
-    async def add_status(self, order_id: int, status: str) -> StatusLog:
-        """Добавить запись о смене статуса"""
-        return await self.create(
-            order_id=order_id,
-            status=status
-        )
-    
     async def get_status_history(
         self, 
         order_id: int, 
@@ -48,35 +41,6 @@ class StatusLogRepository(BaseRepository[StatusLog]):
             select(StatusLog)
             .where(StatusLog.order_id == order_id)
             .order_by(desc(StatusLog.timestamp))
-            .limit(limit)
-        )
-        return result.scalars().all()
-    
-    async def get_orders_by_status(
-        self, 
-        status: str, 
-        skip: int = 0, 
-        limit: int = 100
-    ) -> List[StatusLog]:
-        """Найти заказы по последнему статусу"""
-        subquery = (
-            select(
-                StatusLog.order_id,
-                func.max(StatusLog.timestamp).label('max_ts')
-            )
-            .group_by(StatusLog.order_id)
-            .subquery()
-        )
-        
-        result = await self.session.execute(
-            select(StatusLog)
-            .join(
-                subquery,
-                (StatusLog.order_id == subquery.c.order_id) &
-                (StatusLog.timestamp == subquery.c.max_ts)
-            )
-            .where(StatusLog.status == status)
-            .offset(skip)
             .limit(limit)
         )
         return result.scalars().all()

@@ -30,24 +30,6 @@ class PaymentRepository(BaseRepository[Payment]):
         )
         return float(result.scalar() or 0)
     
-    async def add_payment(
-        self, 
-        order_id: int, 
-        amount: float, 
-        payment_type: str,
-        comment: Optional[str] = None
-    ) -> Payment:
-        """Добавить платёж"""
-        if amount <= 0:
-            raise ValueError("Amount must be positive")
-        
-        return await self.create(
-            order_id=order_id,
-            amount=amount,
-            type=payment_type,
-            comment=comment
-        )
-    
     async def get_payments_by_type(
         self, 
         order_id: int, 

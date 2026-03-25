@@ -31,16 +31,6 @@ class ProgressLogRepository(BaseRepository[ProgressLog]):
         )
         return result.scalar_one_or_none()
     
-    async def add_progress(self, order_id: int, percentage: int) -> ProgressLog:
-        """Добавить запись о прогрессе"""
-        if not 0 <= percentage <= 100:
-            raise ValueError("Percentage must be between 0 and 100")
-        
-        return await self.create(
-            order_id=order_id,
-            percentage=percentage
-        )
-    
     async def get_progress_history(
         self, 
         order_id: int,

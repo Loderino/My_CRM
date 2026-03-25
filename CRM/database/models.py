@@ -60,6 +60,9 @@ class ProgressLog(Base):
 
     order = relationship("Order", back_populates="progress_logs")
 
+    def __repr__(self):
+        return f"<ProgressLog(id={self.id}, percentage='{self.percentage}')>"
+
 class StatusLog(Base):
     __tablename__ = "status_log"
     
@@ -69,6 +72,9 @@ class StatusLog(Base):
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
     
     order = relationship("Order", back_populates="status_logs")
+
+    def __repr__(self):
+        return f"<StatusLog(id={self.id}, status='{self.status}')>"
 
 
 class Payment(Base):

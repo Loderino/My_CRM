@@ -2,6 +2,7 @@ from typing import Optional
 from datetime import date, timedelta
 from sqlalchemy import select, and_, or_, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from CRM.database.models import Order
 from CRM.database.repositories.base import BaseRepository
@@ -13,6 +14,19 @@ class OrderRepository(BaseRepository[Order]):
     def __init__(self, session: AsyncSession):
         super().__init__(session, Order)
     
+    async def get_by_id(self, id: int, detail: bool = True) -> Optional[Order]:
+        query = select(Order).where(Order.id == id)
+        if detail:
+            query = query.options(
+                selectinload(Order.client),
+                selectinload(Order.status_logs),
+                selectinload(Order.progress_logs),
+                selectinload(Order.payments)
+            )
+            
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
+
     async def get_by_client(self, client_id: int) -> list[Order]:
         """Все заказы клиента"""
         result = await self.session.execute(

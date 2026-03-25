@@ -11,6 +11,11 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
+def get_service(service_class) -> Callable:
+    async def _get_service(db: AsyncSession = Depends(get_db)) -> BaseRepository:
+        return service_class(db)
+    return _get_service
+
 def get_repository(repo_class: Type[BaseRepository]) -> Callable:
     """
     Фабрика репозиториев
