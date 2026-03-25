@@ -23,7 +23,7 @@ class ClientRepository(BaseRepository[Client]):
         return result.scalars().all()
     
     async def get_with_orders(self, client_id: int) -> Optional[Client]:
-        """Получить клиента со всеми заказами (жадная загрузка)"""
+        """Получить клиента со всеми заказами"""
         result = await self.session.execute(
             select(Client)
             .where(Client.id == client_id)

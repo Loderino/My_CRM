@@ -19,6 +19,9 @@ class OrderService:
         self.progress_log_repo = ProgressLogRepository(session)
         self.payment_repo = PaymentRepository(session)
     
+    async def get_all_orders(self, skip, limit, order_by) -> list[Order]:
+        return await self.order_repo.get_all(skip, limit, order_by)
+
     async def get_order(self, order_id: int) -> Optional[Order]:
         return await self.order_repo.get_by_id(order_id)
     
