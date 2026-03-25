@@ -16,8 +16,8 @@ async def run_server(host: str = "127.0.0.1", port: int = 8000):
     )
     templates = Jinja2Templates(directory="CRM/server/frontend/templates")
     app.state.templates = templates
-    app.include_router(frontend_router)
-    app.include_router(api_router, prefix="/api")
+    app.include_router(frontend_router, tags=["Frontend"])
+    app.include_router(api_router, prefix="/api", tags=["API"])
 
     config = uvicorn.Config(
         app=app,
