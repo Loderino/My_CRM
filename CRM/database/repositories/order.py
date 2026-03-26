@@ -1,10 +1,10 @@
 from typing import Optional
 from datetime import date, timedelta
-from sqlalchemy import select, and_, or_, func
+from sqlalchemy import select, and_, or_, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from CRM.database.models import Order
+from CRM.database.models import Order, OrderStatus, StatusLog
 from CRM.database.repositories.base import BaseRepository
 
 
@@ -35,18 +35,26 @@ class OrderRepository(BaseRepository[Order]):
             .order_by(Order.created_date.desc())
         )
         return result.scalars().all()
-    
+
+
     async def get_active_orders(self) -> list[Order]:
-        """Заказы без дедлайна или с будущим дедлайном"""
-        from datetime import date
+        """Получить заказы, у которых последний статус не 'completed'"""
+        subquery = (
+            select(
+                StatusLog.order_id,
+                StatusLog.status,
+                StatusLog.timestamp
+            )
+            .distinct(StatusLog.order_id)
+            .order_by(StatusLog.order_id, desc(StatusLog.timestamp))
+            .subquery()
+        )
         
         result = await self.session.execute(
             select(Order)
-            .where(
-                (Order.deadline_date >= date.today()) | 
-                (Order.deadline_date.is_(None))
-            )
-            .order_by(Order.deadline_date)
+            .join(subquery, Order.id == subquery.c.order_id)
+            .where(subquery.c.status != OrderStatus.COMPLETED)
+            .options(selectinload(Order.status_logs))
         )
         return result.scalars().all()
     

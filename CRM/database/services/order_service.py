@@ -29,6 +29,10 @@ class OrderService:
         """Получить детальную информацию о заказе по id"""
         return await self.order_repo.get_by_id(order_id)
     
+    async def get_active_orders(self):
+        """Получить заказы, у которых статус не 'завершён'"""
+        return await self.order_repo.get_active_orders()
+    
     async def create_order(self, data: dict[str, Any]) -> Order:
         """Добавить запись о заказе"""
         order = await self.order_repo.create(**data)

@@ -3,18 +3,19 @@ from typing import Optional
 from fastapi import APIRouter, Request, Depends, Form, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+from CRM.database.services import OrderService
 from CRM.database.repositories import ClientRepository, OrderRepository
-from CRM.server.api.dependencies import get_repository
+from CRM.server.api.dependencies import get_service, get_repository
+
 
 router = APIRouter()
 
 @router.get("/", response_class=HTMLResponse)
 async def home(
     request: Request,
-    client_repo: ClientRepository = Depends(get_repository(ClientRepository)),
-    order_repo: OrderRepository = Depends(get_repository(OrderRepository))
+    order_service: OrderService = Depends(get_service(OrderService))
     ):
-    active_orders = await order_repo.get_active_orders()
+    active_orders = await order_service.get_active_orders()
 
     return request.app.state.templates.TemplateResponse(
         "pages/index.html",
