@@ -12,6 +12,12 @@ class ProgressLogResponse(BaseModel):
     percentage: int
     timestamp: datetime
 
+class PaymentResponse(BaseModel):
+    id: int
+    type: str
+    amount: float
+    timestamp: datetime
+
 class OrderResponse(BaseModel):
     id: int
     client_id: int
@@ -33,3 +39,4 @@ class DetailedOrderResponse(OrderResponse):
     created_date: datetime
     status_logs: list[StatusLogResponse]
     progress_logs: list[ProgressLogResponse]
+    payments: list[PaymentResponse]
