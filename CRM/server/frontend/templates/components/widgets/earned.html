@@ -1,6 +1,10 @@
 {% extends "components/widgets/base_widget.html" %}
 
 {% block widget_content %}
-<div class="stat-value">{{ amount }} ₽</div>
+<div class="stat-value">Заказы: <span style="color: green;">{{ payments }} ₽</span></div>
+<div class="stat-value">Чаевые: <span style="color: green;">{{ tips }} ₽</span></div>
+<div class="stat-value">Возвраты: <span style="color: red;">{{ refunds }} ₽</span></div>
+<hr>
+<div class="stat-value">ИТОГО: {{ amount }} ₽</div>
 <!-- <div class="stat-sub">За текущий месяц</div> -->
 {% endblock %}

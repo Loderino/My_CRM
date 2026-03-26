@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Request, Depends, Form, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from CRM.database.services import OrderService
+from CRM.database.services import OrderService, PaymentService
 from CRM.database.repositories import ClientRepository, OrderRepository
 from CRM.server.api.dependencies import get_service, get_repository
 
@@ -13,16 +13,18 @@ router = APIRouter()
 @router.get("/", response_class=HTMLResponse)
 async def home(
     request: Request,
-    order_service: OrderService = Depends(get_service(OrderService))
+    order_service: OrderService = Depends(get_service(OrderService)),
+    payments_service: PaymentService = Depends(get_service(PaymentService))
     ):
     active_orders = await order_service.get_active_orders()
+    total_payments = await payments_service.get_total_earned()
 
     return request.app.state.templates.TemplateResponse(
         "pages/index.html",
         {
             "request": request,
             "title": "Главная - CRM",
-            "total_earned": 127.5,
+            "payments_data": total_payments,
             "recent_orders": active_orders,
             "deadlines": [...]
         }

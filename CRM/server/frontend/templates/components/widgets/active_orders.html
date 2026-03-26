@@ -3,7 +3,7 @@
 {% block widget_content %}
 <ul class="widget-list">
     {% for order in orders %}
-        <li>{{ order.title }} - {{ order.price }} ₽</li>
+        <li class="stat-ordinary-value"><a href="/orders/{{ order.id }}"><div>{{ order.title }} - {{ order.contract_price }} ₽</div></a></li>
     {% else %}
         <li class="empty-list">Нет заказов</li>
     {% endfor %}

@@ -13,7 +13,7 @@
 
 <div class="widgets-grid" id="widgets-container">
     <!-- Включаем нужные виджеты -->
-    {% with widget_title="💰 Заработано", amount=total_earned %}
+    {% with widget_title="💰 Заработано", payments=payments_data["total_payment"], tips=payments_data["total_tip"], refunds=payments_data["total_refund"], amount=payments_data["total_received"] %}
         {% include "components/widgets/earned.html" %}
     {% endwith %}
     {% with widget_title="📦 Активные заказы", orders=recent_orders %}
