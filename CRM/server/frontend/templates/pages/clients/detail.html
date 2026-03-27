@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}{{ client.name or 'Клиент' }} - CRM{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/clients.css">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>👤 Профиль клиента</h1>
+    <div>
+        <a href="/clients/{{ client.id }}/edit" class="btn btn-secondary">
+            <i class="fas fa-edit"></i> Редактировать
+        </a>
+        <a href="/clients" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> К списку
+        </a>
+    </div>
+</div>
+
+<div class="client-profile">
+    <!-- Левая колонка: информация о клиенте -->
+    <div class="client-sidebar">
+        <div class="client-avatar">
+            <i class="fas fa-user"></i>
+        </div>
+        <div class="client-name">
+            <h1>{{ client.name or 'Без имени' }}</h1>
+            <div class="client-id">ID: {{ client.id }}</div>
+        </div>
+        
+        {% if client.contacts %}
+        <div class="contacts-section">
+            <h3>📞 Контакты</h3>
+            {% if client.contacts.phone %}
+            <a href="tel:{{ client.contacts.phone }}" class="contact-item">
+                <i class="fas fa-phone"></i> {{ client.contacts.phone }}
+            </a>
+            {% endif %}
+            {% if client.contacts.email %}
+            <a href="mailto:{{ client.contacts.email }}" class="contact-item">
+                <i class="fas fa-envelope"></i> {{ client.contacts.email }}
+            </a>
+            {% endif %}
+            {% if client.contacts.telegram %}
+            <a href="https://t.me/{{ client.contacts.telegram }}" target="_blank" class="contact-item">
+                <i class="fab fa-telegram"></i> @{{ client.contacts.telegram }}
+            </a>
+            {% endif %}
+            {% if client.contacts.vk %}
+            <a href="https://vk.com/{{ client.contacts.vk }}" target="_blank" class="contact-item">
+                <i class="fab fa-vk"></i> {{ client.contacts.vk }}
+            </a>
+            {% endif %}
+            {% if client.contacts.avito %}
+            <div class="contact-item">
+                <i class="fas fa-tag"></i> Avito: {{ client.contacts.avito }}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <div class="contacts-section">
+            <h3>📅 Регистрация</h3>
+            <div class="contact-item">
+                <i class="fas fa-calendar"></i> {{ client.created_at.strftime('%d.%m.%Y') if client.created_at else 'Неизвестно' }}
+            </div>
+        </div>
+        
+        {% if client.notes %}
+        <div class="notes-section">
+            <h3>📝 Заметки</h3>
+            <p>{{ client.notes }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="action-buttons">
+            <a href="/orders/create?client_id={{ client.id }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Новый заказ
+            </a>
+        </div>
+    </div>
+    
+    <!-- Правая колонка: заказы клиента -->
+    <div class="orders-section">
+        <div class="orders-header">
+            <h2>📦 Заказы клиента</h2>
+            <div class="stats-badge">
+                Всего: {{ orders|length }}
+            </div>
+        </div>
+        
+        {% if orders %}
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Статус</th>
+                    <th>Сумма</th>
+                    <th>Дедлайн</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr onclick="window.location.href='/orders/detail/{{ order.id }}'" style="cursor: pointer;">
+                    <td>#{{ order.id }}</td>
+                    <td><strong>{{ order.title }}</strong></td>
+                    <td>
+                        {% set status = order.current_status or order.status or 'created' %}
+                        <span class="order-status status-{{ status|replace(' ', '_')|lower }}">
+                            {{ status|replace('_', ' ')|title }}
+                        </span>
+                    </td>
+                    <td class="order-sum">{{ "{:,.0f}".format(order.contract_price) if order.contract_price else '—' }} ₽</td>
+                    <td>{{ order.deadline_date.strftime('%d.%m.%Y') if order.deadline_date else '—' }}</td>
+                    <td>
+                        <a href="/orders/{{ order.id }}" class="btn-icon" onclick="event.stopPropagation()">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-orders">
+            <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+            <p>У клиента пока нет заказов</p>
+            <a href="/orders/create?client_id={{ client.id }}" class="btn btn-primary">Создать первый заказ</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

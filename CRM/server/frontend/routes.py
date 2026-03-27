@@ -3,6 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Request, Depends, Form, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+from CRM.database.models import PaymentType
 from CRM.database.services import OrderService, PaymentService
 from CRM.database.repositories import ClientRepository, OrderRepository
 from CRM.server.api.dependencies import get_service, get_repository
@@ -77,6 +78,29 @@ async def clients(
         }
     )
 
+@router.get("/clients/detail/{client_id}", response_class=HTMLResponse)
+async def client_detail(
+    request: Request,
+    client_id: int,
+    order_repo: OrderRepository = Depends(get_repository(OrderRepository)),
+    client_repo: ClientRepository = Depends(get_repository(ClientRepository))
+):
+    client = await client_repo.get_by_id(client_id)
+    if not client:
+        return HTMLResponse("Клиент не найден", status_code=404)
+    
+    # Получаем заказы клиента с подгрузкой статусов
+    orders = await order_repo.get_by_client(client_id)
+    
+    return request.app.state.templates.TemplateResponse(
+        "pages/clients/detail.html",
+        {
+            "request": request,
+            "client": client,
+            "orders": orders
+        }
+    )
+
 @router.get("/clients/create", response_class=HTMLResponse)
 async def create_client_page(request: Request):
     return request.app.state.templates.TemplateResponse(
@@ -140,6 +164,41 @@ async def orders_list(
             "search_query": search or "",
             "today": datetime.now().date(),
             "timedelta": timedelta
+        }
+    )
+
+@router.get("/orders/detail/{order_id}", response_class=HTMLResponse)
+async def order_detail(
+    request: Request,
+    order_id: int,
+    order_service: OrderService = Depends(get_service(OrderService))
+):
+    order = await order_service.get_order(order_id)
+    if not order:
+        return HTMLResponse("Заказ не найден", status_code=404)
+    
+    # Получаем историю
+    status_history = order.status_logs
+    progress_history = order.progress_logs
+    payments = order.payments
+
+    total_received = 0
+    for payment in payments:
+        if payment.type == PaymentType.REFUND:
+            total_received -= payment.amount
+        else:
+            total_received += payment.amount
+
+    return request.app.state.templates.TemplateResponse(
+        "pages/orders/detail.html",
+        {
+            "request": request,
+            "order": order,
+            "status_history": status_history,
+            "progress_history": progress_history,
+            "payments": payments,
+            "total_received": total_received,
+            "today": datetime.now().date()
         }
     )
 

@@ -72,7 +72,7 @@
             </thead>
             <tbody>
                 {% for client in clients %}
-                <tr class="client-row" data-client-id="{{ client.id }}">
+                <tr class="client-row" data-client-id="detail/{{ client.id }}">
                     <td class="client-id">#{{ client.id }}</td>
                     <td class="client-name">
                         <strong>{{ client.name or 'Без имени' }}</strong>
@@ -119,10 +119,10 @@
                     <td class="orders-sum">{{ client.orders_sum|default(0)|int }} ₽</td>
                     <td class="registration-date">{{ client.created_at.strftime('%d.%m.%Y') if client.created_at else '-' }}</td>
                     <td class="actions">
-                        <a href="/clients/{{ client.id }}" class="btn-icon" title="Просмотр">
+                        <a href="/clients/detail/{{ client.id }}" class="btn-icon" title="Просмотр">
                             <i class="fas fa-eye"></i>
                         </a>
-                        <a href="/clients/{{ client.id }}/edit" class="btn-icon" title="Редактировать">
+                        <a href="/clients/detail/{{ client.id }}/edit" class="btn-icon" title="Редактировать">
                             <i class="fas fa-edit"></i>
                         </a>
                     </td>

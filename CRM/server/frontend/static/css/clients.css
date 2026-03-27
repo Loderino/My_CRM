@@ -335,3 +335,154 @@ textarea.form-control {
     resize: vertical;
     min-height: 100px;
 }
+
+.client-profile {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+}
+
+.client-sidebar {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.client-info {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.client-avatar {
+    width: 100px;
+    height: 100px;
+    background: #2c3e50;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+.client-avatar i {
+    font-size: 3rem;
+    color: white;
+}
+
+.client-name {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.client-name h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.client-id {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.contacts-section {
+    margin: 1.5rem 0;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.contacts-section h3 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    color: #495057;
+    text-decoration: none;
+}
+
+.contact-item i {
+    width: 20px;
+    color: #6c757d;
+}
+
+.notes-section {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.orders-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.orders-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.orders-table th {
+    text-align: left;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+.orders-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.order-status {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-created { background: #e9ecef; color: #495057; }
+.status-in_progress { background: #fff3cd; color: #856404; }
+.status-testing { background: #cce5ff; color: #004085; }
+.status-ready { background: #d4edda; color: #155724; }
+.status-completed { background: #28a745; color: white; }
+.status-cancelled { background: #dc3545; color: white; }
+
+.order-sum {
+    font-weight: 600;
+    color: #28a745;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.empty-orders {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+}
