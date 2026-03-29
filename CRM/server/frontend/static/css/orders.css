@@ -479,3 +479,122 @@
 .client-link:hover {
     color: #3498db;
 }
+
+
+.editable-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.editable-field .edit-icon {
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.editable-field:hover .edit-icon {
+    opacity: 1;
+}
+
+.edit-input {
+    display: none;
+    flex: 1;
+}
+
+.edit-input input, .edit-input textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.edit-input textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 0.25rem;
+    margin-top: 0.25rem;
+}
+
+.edit-actions button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.display-value {
+    flex: 1;
+}
+
+.editing .display-value {
+    display: none;
+}
+
+.editing .edit-input {
+    display: block;
+}
+
+.inline-select {
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    background: white;
+}
+
+.inline-progress {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.inline-progress input {
+    flex: 1;
+}
+
+.inline-progress span {
+    min-width: 45px;
+    text-align: right;
+}
+
+.status-select {
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: white;
+}
+
+.deadline-input {
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.price-input {
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}

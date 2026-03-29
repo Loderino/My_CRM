@@ -40,6 +40,24 @@ class OrderService:
         await self.session.commit()
         return order
     
+    async def update_order(self, order_id: int, **kwargs) -> Order:
+        """Обновить запись о заказе"""
+        status = kwargs.pop("status", None)
+        progress = kwargs.pop("progress", None)
+        if status:
+            await self.create_status(order_id, status, commit=False)
+        if progress:
+            await self.create_progress(order_id, progress, commit=False)
+        order = await self.order_repo.update(order_id, **kwargs)
+        await self.session.commit()
+        return order
+    
+    async def delete_order(self, order_id: int) -> bool:
+        """Удалить заказ"""
+        res = await self.order_repo.delete(order_id)
+        await self.session.commit()
+        return res
+    
     # ========== STATUSES ==========
 
     async def get_order_statuses_history(self, order_id: int) -> list[StatusLog]:
@@ -50,14 +68,15 @@ class OrderService:
         """Получить текущий статус заказа"""
         return await self.status_log_repo.get_current_status(order_id)
     
-    async def create_status(self, order_id: int, new_status: str) -> StatusLog:
+    async def create_status(self, order_id: int, new_status: str, commit: bool = True) -> StatusLog:
         """Добавить запись о статусе заказа"""
         status = await self.status_log_repo.create(order_id=order_id, status=new_status)
         order_current_progress = await self.get_order_current_progress(order_id)
         if new_status == OrderStatus.IN_PROGRESS:
             if not order_current_progress:
                 await self.progress_log_repo.create(order_id=order_id, percentage=0)
-        await self.session.commit()
+        if commit:
+            await self.session.commit()
         return status
 
     # ========== PROGRESS ==========
@@ -70,10 +89,11 @@ class OrderService:
         """Получить текущий прогресс выполнения заказа"""
         return await self.progress_log_repo.get_current_progress(order_id)
 
-    async def create_progress(self, order_id: int, percentage: int) -> ProgressLog:
+    async def create_progress(self, order_id: int, percentage: int, commit: bool = True) -> ProgressLog:
         """Создать запись о прогрессе выполнения заказа"""
-        progress = await self.status_log_repo.create(order_id=order_id, percentage=percentage)
-        await self.session.commit()
+        progress = await self.progress_log_repo.create(order_id=order_id, percentage=percentage)
+        if commit:
+            await self.session.commit()
         return progress
     
     # ========== PAYMENTS ==========

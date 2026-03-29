@@ -41,30 +41,30 @@ class BaseRepository(Generic[ModelType]):
         return obj
     
     async def update(
-        self, 
-        _id: int, 
+        self,
+        id_: int,
         **kwargs
     ) -> Optional[ModelType]:
         """Обновить запись"""
         update_data = {k: v for k, v in kwargs.items() if v is not None}
         
         if not update_data:
-            return await self.get_by_id(_id)
-        
+            return await self.get_by_id(id_)
+
         await self.session.execute(
             update(self.model)
-            .where(self.model.id == _id)
+            .where(self.model.id == id_)
             .values(**update_data)
         )
-        await self.session.commit()
-        return await self.get_by_id(id)
+        await self.session.flush()
+        return await self.get_by_id(id_)
     
-    async def delete(self, id: int) -> bool:
+    async def delete(self, id_: int) -> bool:
         """Удалить запись"""
         result = await self.session.execute(
-            delete(self.model).where(self.model.id == id)
+            delete(self.model).where(self.model.id == id_)
         )
-        await self.session.commit()
+        await self.session.flush()
         return result.rowcount > 0
     
     async def count(self) -> int:

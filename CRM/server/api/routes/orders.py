@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Body
 from CRM.database.models import OrderStatus, PaymentType
 from CRM.database.services.order_service import OrderService
 from CRM.server.api.dependencies import get_service
-from CRM.server.api.models.request import OrderRequest
+from CRM.server.api.models.request import OrderRequest, OrderUpdateRequest
 from CRM.server.api.models.response import DetailedOrderResponse, OrderResponse, PaymentResponse, ProgressLogResponse, StatusLogResponse
 
 orders_router = APIRouter()
@@ -24,6 +24,23 @@ async def get_order(
     order_service: OrderService = Depends(get_service(OrderService))
     ) -> DetailedOrderResponse:
     return await order_service.get_order(order_id)
+
+@orders_router.patch("/{order_id}")
+async def patch_order(
+    order_id: int,
+    data: OrderUpdateRequest,
+    order_service: OrderService = Depends(get_service(OrderService))
+):
+    update_data = data.model_dump(exclude_none=True)
+    updated_order = await order_service.update_order(order_id, **update_data)
+    return updated_order
+
+@orders_router.delete("/{order_id}")
+async def delete_order(
+    order_id: int,
+    order_service: OrderService = Depends(get_service(OrderService))
+) -> bool:
+    return await order_service.delete_order(order_id)
 
 @orders_router.post("/")
 async def create_order(

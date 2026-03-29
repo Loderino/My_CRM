@@ -56,7 +56,7 @@ class ProgressLog(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     percentage = Column(Integer, nullable=False, default=0)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
-    order_id = Column(Integer, ForeignKey("order.id"))
+    order_id = Column(Integer, ForeignKey("order.id", ondelete="CASCADE"))
 
     order = relationship("Order", back_populates="progress_logs")
 

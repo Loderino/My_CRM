@@ -11,9 +11,9 @@
 <div class="page-header">
     <h1>📦 Заказ #{{ order.id }}</h1>
     <div>
-        <a href="/orders/detail/{{ order.id }}/edit" class="btn btn-secondary">
-            <i class="fas fa-edit"></i> Редактировать
-        </a>
+        <button class="btn-danger" onclick="confirmDelete()">
+            <i class="fas fa-trash"></i> Удалить
+        </button>
         <a href="/orders" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> К списку
         </a>
@@ -25,22 +25,63 @@
     <div class="order-main">
         <div class="order-header">
             <div class="order-title">
-                <h1>{{ order.title }}</h1>
+                <div class="editable-field" data-field="title">
+                    <div class="display-value">
+                        <h1>{{ order.title }}</h1>
+                    </div>
+                    <div class="edit-input">
+                        <input type="text" value="{{ order.title }}" class="title-input">
+                        <div class="edit-actions">
+                            <button class="btn-save btn-primary btn-sm">Сохранить</button>
+                            <button class="btn-cancel btn-secondary btn-sm">Отмена</button>
+                        </div>
+                    </div>
+                    <i class="fas fa-pencil-alt edit-icon"></i>
+                </div>
                 <div class="order-id">ID: {{ order.id }}</div>
             </div>
             <div>
-                <span class="status-badge status-{{ order.status|replace(' ', '_')|lower }}">
-                    {{ order.status|replace('_', ' ')|title }}
-                </span>
+                <div class="editable-field" data-field="status">
+                    <div class="display-value">
+                        <span class="status-badge status-{{ status_history[-1].status|replace(' ', '_')|lower if status_history else 'created' }}">
+                            {{ status_history[-1].status|replace('_', ' ')|title if status_history else 'Создан' }}
+                        </span>
+                    </div>
+                    <div class="edit-input">
+                        <select class="status-select">
+                            <option value="created" {% if status_history and status_history[-1].status == 'created' %}selected{% endif %}>Создан</option>
+                            <option value="in_progress" {% if status_history and status_history[-1].status == 'in_progress' %}selected{% endif %}>В работе</option>
+                            <option value="testing" {% if status_history and status_history[-1].status == 'testing' %}selected{% endif %}>Тестирование</option>
+                            <option value="ready" {% if status_history and status_history[-1].status == 'ready' %}selected{% endif %}>Готов (ждёт оплаты)</option>
+                            <option value="completed" {% if status_history and status_history[-1].status == 'completed' %}selected{% endif %}>Завершён</option>
+                            <option value="cancelled" {% if status_history and status_history[-1].status == 'cancelled' %}selected{% endif %}>Отменён</option>
+                        </select>
+                        <div class="edit-actions">
+                            <button class="btn-save btn-primary btn-sm">Сохранить</button>
+                            <button class="btn-cancel btn-secondary btn-sm">Отмена</button>
+                        </div>
+                    </div>
+                    <i class="fas fa-pencil-alt edit-icon"></i>
+                </div>
             </div>
         </div>
         
-        {% if order.description %}
         <div class="description">
             <h3>📝 Описание</h3>
-            <p>{{ order.description }}</p>
+            <div class="editable-field" data-field="description">
+                <div class="display-value">
+                    <p>{{ order.description or 'Нет описания' }}</p>
+                </div>
+                <div class="edit-input">
+                    <textarea class="description-input">{{ order.description or '' }}</textarea>
+                    <div class="edit-actions">
+                        <button class="btn-save btn-primary btn-sm">Сохранить</button>
+                        <button class="btn-cancel btn-secondary btn-sm">Отмена</button>
+                    </div>
+                </div>
+                <i class="fas fa-pencil-alt edit-icon"></i>
+            </div>
         </div>
-        {% endif %}
         
         <div class="info-grid">
             <div class="info-item">
@@ -53,7 +94,19 @@
             </div>
             <div class="info-item">
                 <div class="info-label">Сумма</div>
-                <div class="info-value">{{ "{:,.0f}".format(order.contract_price) if order.contract_price else 'Договорная' }} ₽</div>
+                <div class="editable-field" data-field="contract_price">
+                    <div class="display-value">
+                        <div class="info-value">{{ "{:,.0f}".format(order.contract_price) if order.contract_price else 'Договорная' }} ₽</div>
+                    </div>
+                    <div class="edit-input">
+                        <input type="number" step="1000" class="price-input" value="{{ order.contract_price or '' }}" placeholder="Договорная">
+                        <div class="edit-actions">
+                            <button class="btn-save btn-primary btn-sm">Сохранить</button>
+                            <button class="btn-cancel btn-secondary btn-sm">Отмена</button>
+                        </div>
+                    </div>
+                    <i class="fas fa-pencil-alt edit-icon"></i>
+                </div>
             </div>
             <div class="info-item">
                 <div class="info-label">Создан</div>
@@ -61,45 +114,70 @@
             </div>
             <div class="info-item">
                 <div class="info-label">Дедлайн</div>
-                <div class="info-value {% if order.deadline_date and order.deadline_date < today %}text-danger{% endif %}">
-                    {{ order.deadline_date.strftime('%d.%m.%Y') if order.deadline_date else 'Не указан' }}
+                <div class="editable-field" data-field="deadline_date">
+                    <div class="display-value">
+                        <div class="info-value {% if order.deadline_date and order.deadline_date < today %}text-danger{% endif %}">
+                            {{ order.deadline_date.strftime('%d.%m.%Y') if order.deadline_date else 'Не указан' }}
+                        </div>
+                    </div>
+                    <div class="edit-input">
+                        <input type="date" class="deadline-input" value="{{ order.deadline_date.strftime('%Y-%m-%d') if order.deadline_date else '' }}">
+                        <div class="edit-actions">
+                            <button class="btn-save btn-primary btn-sm">Сохранить</button>
+                            <button class="btn-cancel btn-secondary btn-sm">Отмена</button>
+                        </div>
+                    </div>
+                    <i class="fas fa-pencil-alt edit-icon"></i>
                 </div>
             </div>
         </div>
         
         <div class="progress-container">
             <h3>📊 Прогресс</h3>
-            <div class="progress-bar-container">
-                <div class="progress-bar" style="width: {{ order.progress or 0 }}%">
-                    {{ order.progress or 0 }}%
+            <div class="editable-field" data-field="progress">
+                <div class="display-value">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: {{ progress_history[-1].percentage if progress_history else 0 }}%">
+                            {{ progress_history[-1].percentage if progress_history else 0 }}%
+                        </div>
+                    </div>
                 </div>
+                <div class="edit-input">
+                    <div class="inline-progress">
+                        <input type="range" min="0" max="100" class="progress-slider" value="{{ progress_history[-1].percentage if progress_history else 0 }}">
+                        <span class="progress-value-preview">{{ progress_history[-1].percentage if progress_history else 0 }}%</span>
+                    </div>
+                    <div class="edit-actions">
+                        <button class="btn-save btn-primary btn-sm">Сохранить</button>
+                        <button class="btn-cancel btn-secondary btn-sm">Отмена</button>
+                    </div>
+                </div>
+                <i class="fas fa-pencil-alt edit-icon"></i>
             </div>
         </div>
         
-        {% if order.main_languages %}
+        {% if order.instruments %}
         <div class="tools">
             <h3>🛠 Инструменты</h3>
-            <div class="tools-list">
-                {% for lang in order.main_languages %}
-                <span class="tool-tag">{{ lang }}</span>
-                {% endfor %}
+            <div class="editable-field" data-field="instruments">
+                <div class="display-value">
+                    <div class="tools-list">
+                        {% for lang in order.instruments %}
+                        <span class="tool-tag">{{ lang }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="edit-input">
+                    <input type="text" class="languages-input" value="{{ order.instruments|join(', ') }}" placeholder="Python, JavaScript, PostgreSQL...">
+                    <div class="edit-actions">
+                        <button class="btn-save btn-primary btn-sm">Сохранить</button>
+                        <button class="btn-cancel btn-secondary btn-sm">Отмена</button>
+                    </div>
+                </div>
+                <i class="fas fa-pencil-alt edit-icon"></i>
             </div>
         </div>
         {% endif %}
-        
-        <div class="action-buttons">
-            {% if order.status != 'completed' and order.status != 'cancelled' %}
-            <a href="/orders/{{ order.id }}/progress" class="btn btn-primary btn-sm">
-                <i class="fas fa-chart-line"></i> Обновить прогресс
-            </a>
-            <a href="/orders/{{ order.id }}/status" class="btn btn-secondary btn-sm">
-                <i class="fas fa-tag"></i> Сменить статус
-            </a>
-            {% endif %}
-            <a href="/orders/{{ order.id }}/payments/add" class="btn btn-success btn-sm">
-                <i class="fas fa-money-bill"></i> Добавить платёж
-            </a>
-        </div>
     </div>
     
     <!-- Правая колонка: статусы, платежи, прогресс -->
@@ -192,4 +270,128 @@
         </div>
     </div>
 </div>
+
+<script>
+    const ORDER_ID = {{ order.id }};
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка клика по иконке редактирования
+    document.querySelectorAll('.editable-field').forEach(field => {
+        const editIcon = field.querySelector('.edit-icon');
+        if (editIcon) {
+            editIcon.addEventListener('click', () => {
+                field.classList.add('editing');
+            });
+        }
+        
+        // Кнопка отмены
+        const cancelBtn = field.querySelector('.btn-cancel');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                field.classList.remove('editing');
+            });
+        }
+        
+        // Кнопка сохранения
+        const saveBtn = field.querySelector('.btn-save');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', async () => {
+                const fieldName = field.dataset.field;
+                let updateData = {};
+                let value;
+                
+                // Получаем значение в зависимости от типа поля
+                switch (fieldName) {
+                    case 'title':
+                        updateData["title"] = field.querySelector('.title-input').value;
+                        break;
+                    case 'description':
+                        updateData["description"] = field.querySelector('.description-input').value;
+                        break;
+                    case 'status':
+                        updateData["status"] = field.querySelector('.status-select').value;
+                        break;
+                    case 'contract_price':
+                        value = field.querySelector('.price-input').value;
+                        if (value !== '') {
+                            updateData["contract_price"] = parseInt(value);
+                        }
+                        break;
+                    case 'deadline_date':
+                        value = field.querySelector('.deadline-input').value;
+                        if (value !== ''){
+                            updateData["deadline_date"] = value
+                        };
+                        break;
+                    case 'progress':
+                        updateData["progress"] = parseInt(field.querySelector('.progress-slider').value);
+                        break;
+                    case 'instruments':
+                        const langsStr = field.querySelector('.languages-input').value;
+                        updateData["instruments"] = langsStr.split(',').map(l => l.trim()).filter(l => l);
+                        break;
+                    default:
+                        return;
+                }
+                
+                // Отправляем PATCH запрос
+                try {
+                    const response = await fetch(`/api/orders/${ORDER_ID}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updateData)
+                    });
+                    
+                    if (response.ok) {
+                        // Перезагружаем страницу
+                        window.location.reload();
+                    } else {
+                        const error = await response.json();
+                        alert('Ошибка: ' + (error.detail || 'Не удалось обновить'));
+                    }
+                } catch (error) {
+                    alert('Ошибка: ' + error.message);
+                }
+            });
+        }
+    });
+    
+    // Предпросмотр прогресса при движении слайдера
+    document.querySelectorAll('.progress-slider').forEach(slider => {
+        slider.addEventListener('input', function() {
+            const preview = this.closest('.edit-input').querySelector('.progress-value-preview');
+            if (preview) {
+                preview.textContent = this.value + '%';
+            }
+        });
+    });
+});
+
+// Функция подтверждения удаления
+async function confirmDelete() {
+    if (confirm(`Вы уверены, что хотите удалить заказ #${ORDER_ID}? Это действие нельзя отменить.`)) {
+        try {
+            const response = await fetch(`/api/orders/${ORDER_ID}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                window.location.href = '/orders';
+            } else {
+                const error = await response.json();
+                alert('Ошибка: ' + (error.detail || 'Не удалось удалить заказ'));
+            }
+        } catch (error) {
+            alert('Ошибка: ' + error.message);
+        }
+    }
+}
+</script>
 {% endblock %}
