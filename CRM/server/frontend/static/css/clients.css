@@ -717,3 +717,67 @@ textarea.form-control {
     padding: 6px 12px;
     margin-left: 8px;
 }
+
+
+.contact-group {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.contact-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.contact-group-header select {
+    width: 150px;
+    padding: 6px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.contact-group-header button {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.contact-group-header button:hover {
+    color: #c82333;
+}
+
+.contact-value-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.contact-badge-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e9ecef;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin: 4px;
+}
+
+.preview-container {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #dee2e6;
+}
+
+.preview-title {
+    font-size: 13px;
+    color: #6c757d;
+    margin-bottom: 8px;
+}

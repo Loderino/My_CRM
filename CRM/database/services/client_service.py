@@ -14,14 +14,21 @@ class ClientService:
         """Получить всех клиентов с пагинацией"""
         return await self.client_repo.get_all(skip, limit, order_by)
     
-    async def get_client(self, client_id: int) -> Client | None:
-        """Получить клиента по ID"""
-        return await self.client_repo.get_by_id(client_id)
+    async def find_clients(self, skip: int, limit: int, search: str) -> list[Client]:
+        """Получить заказы по названию или описанию"""
+        return await self.client_repo.get_filtered(skip, limit, search)
     
     async def search_clients(self, string_to_find: str) -> list[Client]:
         """Поиск клиентов по имени или контактам"""
         return await self.client_repo.search(string_to_find)
     
+    async def get_client(self, client_id: int) -> Client | None:
+        """Получить клиента по ID"""
+        return await self.client_repo.get_by_id(client_id)
+    
+    async def get_client_orders_stats(self, client_id: int) -> dict:
+        return await self.client_repo.get_order_stats(client_id)
+
     async def create_client(self, **kwargs) -> Client:
         """Создать нового клиента"""
         client = await self.client_repo.create(**kwargs)

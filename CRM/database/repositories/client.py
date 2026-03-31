@@ -51,7 +51,7 @@ class ClientRepository(BaseRepository[Client]):
         limit: int = 100,
         has_orders: Optional[bool] = None,
         search: Optional[str] = None
-    ) -> tuple[list[Client], int]:
+    ) -> list[Client]:
         """
         Получить отфильтрованный список клиентов с пагинацией
         Возвращает (список, общее_количество)
@@ -71,18 +71,12 @@ class ClientRepository(BaseRepository[Client]):
             else:
                 query = query.where(~Client.orders.any())
         
-        # Сначала получаем общее количество
-        count_query = select(func.count()).select_from(query.subquery())
-        total = await self.session.execute(count_query)
-        total = total.scalar()
-        
-        # Потом данные с пагинацией
         result = await self.session.execute(
             query.offset(skip).limit(limit)
         )
         clients = result.scalars().all()
         
-        return clients, total
+        return clients
 
     async def get_order_stats(self, client_id: int) -> dict:
         """Получить статистику по заказам клиента"""
