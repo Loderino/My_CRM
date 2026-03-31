@@ -12,6 +12,9 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 def get_service(service_class) -> Callable:
+    """
+    Фабрика сервисов
+    """
     async def _get_service(db: AsyncSession = Depends(get_db)) -> BaseRepository:
         return service_class(db)
     return _get_service

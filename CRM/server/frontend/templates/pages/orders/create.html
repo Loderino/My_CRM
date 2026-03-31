@@ -4,8 +4,6 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="/static/css/orders.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css">
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 {% endblock %}
 
 {% block content %}
@@ -16,22 +14,50 @@
     </div>
 
     <div class="form-container">
-        <form method="post" action="/orders/create" class="order-form">
-            <!-- Клиент (с поиском) -->
+        <form id="orderForm" class="order-form">
+            <!-- Скрытое поле для client_id (будет заполнено либо выбором, либо предустановкой) -->
+            <input type="hidden" id="clientId" name="client_id" value="{{ pre_selected_client.id if pre_selected_client else '' }}">
+            
+            <!-- Блок предварительно выбранного клиента -->
+            {% if pre_selected_client %}
             <div class="form-group">
-                <label for="client_id">Клиент *</label>
-                <select id="client_id" name="client_id" class="form-control client-select" required>
-                    <option value="">-- Поиск клиента --</option>
-                    {% for client in clients %}
-                        <option value="{{ client.id }}">
-                            {{ client.name or 'Без имени' }}
-                            {% if client.contacts.telegram %} | @{{ client.contacts.telegram }}{% endif %}
-                            {% if client.contacts.phone %} | {{ client.contacts.phone }}{% endif %}
-                        </option>
-                    {% endfor %}
-                </select>
-                <div class="form-hint">Можно ввести имя, телефон или telegram для поиска</div>
+                <label>Клиент *</label>
+                <div class="selected-client" style="background: #f8f9fa; padding: 12px; border-radius: 4px;">
+                    <div class="selected-client-info">
+                        <strong>{{ pre_selected_client.name or 'Без имени' }}</strong>
+                        <div class="client-contacts" style="font-size: 12px; color: #6c757d;">
+                            {% if pre_selected_client.contacts.phone %}📞 {{ pre_selected_client.contacts.phone }}<br>{% endif %}
+                            {% if pre_selected_client.contacts.telegram %}📱 @{{ pre_selected_client.contacts.telegram }}<br>{% endif %}
+                            {% if pre_selected_client.contacts.email %}✉️ {{ pre_selected_client.contacts.email }}{% endif %}
+                        </div>
+                    </div>
+                    <button type="button" class="btn-link" onclick="clearSelectedClient()" style="margin-top: 8px; padding: 0; border: none; background: none; color: #dc3545; cursor: pointer;">
+                        Изменить клиента
+                    </button>
+                </div>
             </div>
+            
+            <!-- Блок поиска (скрыт по умолчанию) -->
+            <div id="clientSearchBlock" style="display: none;">
+                <div class="form-group">
+                    <label for="clientSearch">Поиск клиента</label>
+                    <div class="client-search-container">
+                        <input type="text" id="clientSearch" class="form-control" placeholder="Введите имя, телефон или telegram...">
+                        <div id="clientSuggestions" class="client-suggestions"></div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Обычный блок поиска -->
+            <div class="form-group">
+                <label for="clientSearch">Клиент *</label>
+                <div class="client-search-container">
+                    <input type="text" id="clientSearch" class="form-control" placeholder="Введите имя, телефон или telegram...">
+                    <div id="clientSuggestions" class="client-suggestions"></div>
+                </div>
+                <div id="selectedClientDisplay" style="display: none;" class="selected-client"></div>
+            </div>
+            {% endif %}
 
             <!-- Название заказа -->
             <div class="form-group">
@@ -57,7 +83,7 @@
             <div class="form-row">
                 <div class="form-group half">
                     <label for="contract_price">Сумма (₽)</label>
-                    <input type="number" id="contract_price" name="contract_price" class="form-control" step="0.01" min="0">
+                    <input type="number" id="contract_price" name="contract_price" class="form-control" step="10" min="0">
                 </div>
                 <div class="form-group half">
                     <label for="deadline_date">Дедлайн</label>
@@ -68,7 +94,7 @@
             <!-- Кнопки -->
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">💾 Создать заказ</button>
-                <button type="reset" class="btn btn-secondary">🔄 Очистить</button>
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">🔄 Очистить</button>
             </div>
         </form>
     </div>
@@ -76,50 +102,172 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-$(document).ready(function() {
-    // Инициализация Select2 для поиска клиента
-    $('#client_id').select2({
-        theme: 'bootstrap4',
-        placeholder: 'Поиск клиента по имени, телефону или telegram',
-        allowClear: true,
-        width: '100%',
-        language: {
-            inputTooShort: function() {
-                return 'Введите 2 или более символов для поиска';
-            },
-            noResults: function() {
-                return 'Клиент не найден. <a href="/clients/create" target="_blank">Создать нового</a>';
-            }
-        },
-        minimumInputLength: 1,
-        templateResult: formatClient,
-        templateSelection: formatClientSelection
-    });
+let searchTimeout;
+let currentSearchQuery = '';
+
+// Обработка поиска клиента
+const clientSearch = document.getElementById('clientSearch');
+const suggestionsDiv = document.getElementById('clientSuggestions');
+
+clientSearch.addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    const query = this.value.trim();
+    currentSearchQuery = query;
     
-    // Форматирование отображения в выпадающем списке
-    function formatClient(client) {
-        if (!client.id) return client.text;
-        
-        var $container = $('<div class="client-option">');
-        var $name = $('<div class="client-name">').text(client.text.split(' | ')[0]);
-        $container.append($name);
-        
-        // Добавляем контакты если есть
-        var contacts = client.text.split(' | ').slice(1);
-        if (contacts.length > 0) {
-            var $contacts = $('<div class="client-contacts-small">').text(contacts.join(' | '));
-            $container.append($contacts);
-        }
-        
-        return $container;
+    if (query.length < 2) {
+        suggestionsDiv.style.display = 'none';
+        return;
     }
     
-    function formatClientSelection(client) {
-        if (!client.id) return client.text;
-        return client.text.split(' | ')[0]; // Показываем только имя при выборе
+    searchTimeout = setTimeout(() => {
+        searchClients(query);
+    }, 300);
+});
+
+// Поиск клиентов через API
+async function searchClients(query) {
+    try {
+        suggestionsDiv.innerHTML = '<div class="loading-suggestions">Поиск...</div>';
+        suggestionsDiv.style.display = 'block';
+        
+        const response = await fetch(`/api/clients/search?q=${encodeURIComponent(query)}`);
+        const clients = await response.json();
+        
+        if (clients.length === 0) {
+            suggestionsDiv.innerHTML = '<div class="loading-suggestions">Клиенты не найдены. <a href="/clients/create" target="_blank">Создать нового</a></div>';
+            return;
+        }
+        
+        suggestionsDiv.innerHTML = clients.map(client => `
+            <div class="client-suggestion-item" onclick="selectClient(${client.id}, '${escapeHtml(client.name || 'Без имени')}', '${escapeHtml(formatContacts(client.contacts))}')">
+                <div class="client-suggestion-name">${escapeHtml(client.name || 'Без имени')}</div>
+                <div class="client-suggestion-contacts">${escapeHtml(formatContacts(client.contacts))}</div>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Ошибка поиска клиентов:', error);
+        suggestionsDiv.innerHTML = '<div class="loading-suggestions">Ошибка поиска. Попробуйте позже.</div>';
+    }
+}
+
+// Форматирование контактов для отображения
+function formatContacts(contacts) {
+    if (!contacts) return '';
+    const parts = [];
+    if (contacts.phone) parts.push(`📞 ${contacts.phone}`);
+    if (contacts.telegram) parts.push(`📱 ${contacts.telegram}`);
+    if (contacts.email) parts.push(`✉️ ${contacts.email}`);
+    if (contacts.vk) parts.push(`📘 ${contacts.vk}`);
+    return parts.join(' | ');
+}
+
+// Выбор клиента
+function selectClient(id, name, contacts) {
+    document.getElementById('clientId').value = id;
+    document.getElementById('selectedClientName').textContent = name;
+    document.getElementById('selectedClientContacts').textContent = contacts;
+    document.getElementById('selectedClientDisplay').style.display = 'flex';
+    document.getElementById('clientSearch').style.display = 'none';
+    suggestionsDiv.style.display = 'none';
+    clientSearch.value = '';
+}
+
+{% if pre_selected_client %}
+function clearSelectedClient() {
+    document.getElementById('clientId').value = '';
+    document.querySelector('.selected-client').style.display = 'none';
+    document.getElementById('clientSearchBlock').style.display = 'block';
+    document.getElementById('clientSearch').focus();
+}
+{% else %}
+function clearSelectedClient() {
+    document.getElementById('clientId').value = '';
+    document.getElementById('selectedClientDisplay').style.display = 'none';
+    document.getElementById('clientSearch').style.display = 'block';
+    clientSearch.value = '';
+    clientSearch.focus();
+}
+{% endif %}
+
+// Экранирование HTML
+function escapeHtml(str) {
+    if (!str) return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// Отправка формы через API
+document.getElementById('orderForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const clientId = document.getElementById('clientId').value;
+    if (!clientId) {
+        alert('Пожалуйста, выберите клиента');
+        return;
+    }
+    
+    const orderData = {
+        client_id: parseInt(clientId),
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value || null,
+        instruments: document.getElementById('instruments').value
+            .split(',')
+            .map(s => s.trim())
+            .filter(s => s),
+        contract_price: parseFloat(document.getElementById('contract_price').value) || null,
+        deadline_date: document.getElementById('deadline_date').value 
+            ? new Date(document.getElementById('deadline_date').value).toISOString() 
+            : null
+    };
+    
+    if (!orderData.title) {
+        alert('Введите название заказа');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/orders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            window.location.href = `/orders/detail/${result.id}`;
+        } else {
+            const error = await response.json();
+            alert('Ошибка: ' + (error.detail || 'Не удалось создать заказ'));
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка при создании заказа');
+    }
+});
+
+// Сброс формы
+function resetForm() {
+    document.getElementById('orderForm').reset();
+    clearSelectedClient();
+    document.getElementById('title').value = '';
+    document.getElementById('description').value = '';
+    document.getElementById('instruments').value = '';
+    document.getElementById('contract_price').value = '';
+    document.getElementById('deadline_date').value = '';
+}
+
+// Закрытие подсказок при клике вне
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.client-search-container')) {
+        suggestionsDiv.style.display = 'none';
     }
 });
 </script>

@@ -12,12 +12,16 @@ class ClientRepository(BaseRepository[Client]):
     
     def __init__(self, session: AsyncSession):
         super().__init__(session, Client)
-    
-    async def search_by_contact(self, contact_value: str) -> list[Client]:
-        """Поиск клиента по контактам (телефон, email в JSON)"""
+
+    async def search(self, query: str) -> list[Client]:  
+        """Поиск клиента по имени и контактам"""
         result = await self.session.execute(
-            select(Client).where(
-                Client.contacts.cast(String).ilike(f"%{contact_value}%")
+            select(Client)
+            .where(
+                or_(
+                    Client.name.ilike(f"%{query}%"),
+                    Client.contacts.cast(String).ilike(f"%{query}%")
+                )
             )
         )
         return result.scalars().all()

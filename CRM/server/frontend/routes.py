@@ -4,7 +4,7 @@ from fastapi import APIRouter, Request, Depends, Form, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from CRM.database.models import PaymentType
-from CRM.database.services import OrderService, PaymentService
+from CRM.database.services import OrderService, PaymentService, ClientService
 from CRM.database.repositories import ClientRepository, OrderRepository
 from CRM.server.api.dependencies import get_service, get_repository
 
@@ -202,47 +202,20 @@ async def order_detail(
         }
     )
 
-@router.get("/orders/create", response_class=HTMLResponse)
+@router.get("/orders/create")
 async def create_order_page(
     request: Request,
-    client_repo: ClientRepository = Depends(get_repository(ClientRepository))
+    client_id: Optional[int] = None,
+    client_service: ClientService = Depends(get_service(ClientService))
 ):
-    clients = await client_repo.get_all()
+    pre_selected_client = None
+    if client_id:
+        pre_selected_client = await client_service.get_client(client_id)
     
     return request.app.state.templates.TemplateResponse(
         "pages/orders/create.html",
         {
             "request": request,
-            "clients": clients
+            "pre_selected_client": pre_selected_client
         }
     )
-
-# Обработка создания заказа
-@router.post("/orders/create")
-async def create_order(
-    title: str = Form(...),
-    description: str = Form(""),
-    instruments: str = Form(""),
-    contract_price: Optional[float] = Form(None),
-    deadline_date: Optional[str] = Form(None),
-    client_id: int = Form(...),
-    order_repo: OrderRepository = Depends(get_repository(OrderRepository))
-):
-    # Преобразуем строку с языками в список
-    instruments_list = [tool.strip() for tool in instruments.split(",") if tool.strip()]
-    
-    # Преобразуем дату
-    deadline = None
-    if deadline_date:
-        deadline = datetime.strptime(deadline_date, "%Y-%m-%d").date()
-    
-    order = await order_repo.create(
-        title=title,
-        description=description,
-        instruments=instruments_list,
-        contract_price=contract_price,
-        deadline_date=deadline,
-        client_id=client_id
-    )
-    
-    return RedirectResponse(url=f"/orders", status_code=303)
