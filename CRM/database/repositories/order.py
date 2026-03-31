@@ -81,7 +81,7 @@ class OrderRepository(BaseRepository[Order]):
         skip: int = 0,
         limit: int = 100,
         search: Optional[str] = None
-    ) -> tuple[list[Order], int]:
+    ) -> list[Order]:
         """
         Получить отфильтрованный список клиентов с пагинацией
         Возвращает (список, общее_количество)
@@ -95,15 +95,10 @@ class OrderRepository(BaseRepository[Order]):
             )
             query = query.where(search_filter)
         
-        # Сначала получаем общее количество
-        count_query = select(func.count()).select_from(query.subquery())
-        total = await self.session.execute(count_query)
-        total = total.scalar()
-        
         # Потом данные с пагинацией
         result = await self.session.execute(
             query.offset(skip).limit(limit)
         )
         clients = result.scalars().all()
         
-        return clients, total
+        return clients

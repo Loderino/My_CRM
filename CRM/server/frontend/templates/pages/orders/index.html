@@ -3,8 +3,16 @@
 {% block title %}Заказы - CRM{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
 <link rel="stylesheet" href="/static/css/orders.css">
+<style>
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -16,7 +24,7 @@
         </a>
     </div>
 
-    <!-- Поиск -->
+    <!-- Поиск (улучшенный) -->
     <div class="filters-panel">
         <div class="search-section">
             <div class="search-box">
@@ -25,25 +33,18 @@
                     type="text" 
                     id="searchInput" 
                     class="form-control" 
-                    placeholder="Поиск по названию или клиенту..."
+                    placeholder="Поиск по названию, описанию или инструментам..."
                     value="{{ search_query or '' }}"
                 >
             </div>
             <button class="btn btn-primary" onclick="applySearch()">
                 <i class="fas fa-search"></i> Найти
             </button>
-        </div>
-        
-        <!-- Фильтры (скрыты, но оставлены для будущего) -->
-        <div class="filters-row" style="display: none;">
-            <div class="filter-group">
-                <label>Статус:</label>
-                <select id="statusFilter" class="form-control">
-                    <option value="all">Все</option>
-                    <option value="active">В работе</option>
-                    <option value="completed">Завершены</option>
-                </select>
-            </div>
+            {% if search_query %}
+            <button class="btn btn-secondary" onclick="clearSearch()">
+                <i class="fas fa-times"></i> Сбросить
+            </button>
+            {% endif %}
         </div>
     </div>
 
@@ -56,7 +57,7 @@
                     <th>Название</th>
                     <th>Клиент</th>
                     <th>Дедлайн</th>
-                    <th>Прогресс</th>
+                    <th>Статус</th>
                     <th>Инструменты</th>
                     <th>Сумма</th>
                     <th></th>
@@ -64,7 +65,7 @@
             </thead>
             <tbody>
                 {% for order in orders %}
-                <tr class="order-row" data-order-id="detail/{{ order.id }}">
+                <tr class="order-row" data-order-id="{{ order.id }}">
                     <td class="order-id">#{{ order.id }}</td>
                     <td class="order-title">
                         <strong>{{ order.title }}</strong>
@@ -99,18 +100,29 @@
                             <span class="text-muted">Не указан</span>
                         {% endif %}
                     </td>
-                    <td class="progress">
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" style="width: {{ order.progress or 0 }}%"></div>
-                            <span class="progress-text">{{ order.progress or 0 }}%</span>
-                        </div>
+                    <td class="status">
+                        {% set status_map = {
+                            'created': 'Создан',
+                            'in_progress': 'В работе',
+                            'testing': 'Тестирование',
+                            'ready': 'Готов',
+                            'completed': 'Завершён',
+                            'cancelled': 'Отменён'
+                        } %}
+                        {% set status_display = status_map.get(order.status_logs[-1].status, order.status_logs[-1].status|replace('_', ' ')|title) %}
+                        <span class="status-badge status-{{ order.status_logs[-1].status|replace(' ', '_')|lower }}">
+                            {{ status_display }}
+                        </span>
                     </td>
                     <td class="tools">
                         {% if order.instruments %}
                             <div class="tools-badges">
-                                {% for tool in order.instruments %}
+                                {% for tool in order.instruments[:3] %}
                                     <span class="tool-badge">{{ tool }}</span>
                                 {% endfor %}
+                                {% if order.instruments|length > 3 %}
+                                    <span class="tool-badge more">+{{ order.instruments|length - 3 }}</span>
+                                {% endif %}
                             </div>
                         {% else %}
                             <span class="text-muted">—</span>
@@ -124,12 +136,9 @@
                         {% endif %}
                     </td>
                     <td class="actions">
-                        <a href="/orders/detail/{{ order.id }}" class="btn-icon" title="Просмотр">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="/orders/detail/{{ order.id }}/edit" class="btn-icon" title="Редактировать">
-                            <i class="fas fa-edit"></i>
-                        </a>
+                        <button class="btn-icon delete-btn" data-order-id="{{ order.id }}" data-order-title="{{ order.title }}" title="Удалить" onclick="confirmDelete('{{ order.id }}', '{{ order.title }}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </td>
                 </tr>
                 {% else %}
@@ -180,8 +189,107 @@
         </div>
     </div>
 </div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div id="deleteModal" class="modal-overlay" style="display: none;">
+    <div class="modal-container">
+        <h3>🗑️ Удаление заказа</h3>
+        <p id="deleteModalText">Вы уверены, что хотите удалить этот заказ? Это действие нельзя отменить.</p>
+        <div class="modal-buttons">
+            <button class="modal-cancel" onclick="closeDeleteModal()">Отмена</button>
+            <button class="modal-confirm" onclick="executeDelete()">Удалить</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="/static/js/pages/orders.js"></script>
+<script>
+    let deleteOrderId = null;
+    
+    // Поиск
+    function applySearch() {
+        const search = document.getElementById('searchInput').value;
+        const perPage = document.getElementById('perPageSelect').value;
+        const url = new URL(window.location.href);
+        url.searchParams.set('page', '1');
+        url.searchParams.set('per_page', perPage);
+        if (search) {
+            url.searchParams.set('search', search);
+        } else {
+            url.searchParams.delete('search');
+        }
+        window.location.href = url.toString();
+    }
+    
+    function clearSearch() {
+        window.location.href = window.location.pathname + '?page=1&per_page=' + document.getElementById('perPageSelect').value;
+    }
+    
+    // Поиск по Enter
+    document.getElementById('searchInput')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') applySearch();
+    });
+    
+    // Пагинация
+    function changePerPage(value) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('per_page', value);
+        url.searchParams.set('page', '1');
+        window.location.href = url.toString();
+    }
+    
+    // Подтверждение удаления
+    function confirmDelete(orderId, orderTitle) {
+        deleteOrderId = orderId;
+        document.getElementById('deleteModalText').innerHTML = `Вы уверены, что хотите удалить заказ <strong>#${orderId}${orderTitle ? ' - ' + orderTitle : ''}</strong>? Это действие нельзя отменить.`;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+    
+    function closeDeleteModal() {
+        deleteOrderId = null;
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+    
+    async function executeDelete() {
+        if (!deleteOrderId) return;
+        
+        try {
+            const response = await fetch(`/api/orders/${deleteOrderId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                const error = await response.json();
+                alert('Ошибка: ' + (error.detail || 'Не удалось удалить заказ'));
+                closeDeleteModal();
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            alert('Ошибка при удалении заказа');
+            closeDeleteModal();
+        }
+    }
+    
+    // Клик по строке
+    document.querySelectorAll('.order-row').forEach(row => {
+        row.addEventListener('click', function(e) {
+            if (e.target.closest('.btn-icon, .delete-btn, .client-link')) return;
+            const orderId = this.dataset.orderId;
+            if (orderId) window.location.href = `/orders/detail/${orderId}`;
+        });
+    });
+    
+    // Закрытие модалки по Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && document.getElementById('deleteModal').style.display === 'flex') {
+            closeDeleteModal();
+        }
+    });
+</script>
 {% endblock %}

@@ -31,22 +31,6 @@
     box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
 }
 
-.search-section {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-}
-
-.search-section .search-box {
-    flex: 1;
-    margin-bottom: 0;
-}
-
-.search-section .btn {
-    padding: 0.75rem 1.5rem;
-    white-space: nowrap;
-}
-
 /* Панель фильтров */
 .filters-panel {
     background: white;
@@ -682,4 +666,112 @@
     padding: 10px;
     text-align: center;
     color: #6c757d;
+}
+
+/* Улучшенная поисковая строка */
+.search-section {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.search-section .search-box {
+    flex: 1;
+    position: relative;
+}
+.search-section .search-box input {
+    width: 100%;
+    padding: 10px 12px 10px 40px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+.search-section .search-box input:focus {
+    outline: none;
+    border-color: #2c3e50;
+    box-shadow: 0 0 0 2px rgba(44,62,80,0.1);
+}
+.search-section .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #95a5a6;
+    font-size: 14px;
+}
+.search-section .btn {
+    padding: 10px 20px;
+    white-space: nowrap;
+}
+
+/* Кнопка удаления */
+.btn-icon.delete-btn {
+    color: #dc3545;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 16px;
+    padding: 6px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+.btn-icon.delete-btn:hover {
+    background: #fee2e2;
+    color: #c82333;
+}
+
+/* Модальное окно подтверждения */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal-container {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.modal-container h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+.modal-container p {
+    margin-bottom: 20px;
+    color: #6c757d;
+}
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+.modal-buttons button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+.modal-confirm {
+    background: #dc3545;
+    color: white;
+}
+.modal-confirm:hover {
+    background: #c82333;
+}
+.modal-cancel {
+    background: #e9ecef;
+    color: #495057;
+}
+.modal-cancel:hover {
+    background: #dee2e6;
 }

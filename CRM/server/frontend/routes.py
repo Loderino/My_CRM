@@ -137,30 +137,28 @@ async def orders_list(
     page: int = Query(1, ge=1),
     per_page: int = Query(10, ge=1, le=100),
     search: Optional[str] = Query(None),
-    order_repo: OrderRepository = Depends(get_repository(OrderRepository))
+    order_service: OrderService = Depends(get_service(OrderService))
 ):
     skip = (page - 1) * per_page
     
-    # Получаем заказы с пагинацией
-    orders, total = await order_repo.get_filtered(
+    orders = await order_service.find_orders_by_name(
         skip=skip,
         limit=per_page,
         search=search
     )
-    
-    # Для каждого заказа подгружаем клиента
+    # Для каждого заказа подгружаем клиента и статусы
     for order in orders:
-        await order_repo.session.refresh(order, attribute_names=['client'])
+        await order_service.session.refresh(order, attribute_names=['client', "status_logs"])
     
     return request.app.state.templates.TemplateResponse(
         "pages/orders/index.html",
         {
             "request": request,
             "orders": orders,
-            "total_orders": total,
+            "total_orders": len(orders),
             "page": page,
             "per_page": per_page,
-            "total_pages": (total + per_page - 1) // per_page,
+            "total_pages": (len(orders) + per_page - 1) // per_page,
             "search_query": search or "",
             "today": datetime.now().date(),
             "timedelta": timedelta

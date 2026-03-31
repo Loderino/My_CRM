@@ -15,17 +15,17 @@
 
     <div class="form-container">
         <form id="orderForm" class="order-form">
-            <!-- Скрытое поле для client_id (будет заполнено либо выбором, либо предустановкой) -->
+            <!-- Скрытое поле для client_id -->
             <input type="hidden" id="clientId" name="client_id" value="{{ pre_selected_client.id if pre_selected_client else '' }}">
             
-            <!-- Блок предварительно выбранного клиента -->
             {% if pre_selected_client %}
+            <!-- Блок предварительно выбранного клиента -->
             <div class="form-group">
                 <label>Клиент *</label>
                 <div class="selected-client" style="background: #f8f9fa; padding: 12px; border-radius: 4px;">
                     <div class="selected-client-info">
-                        <strong>{{ pre_selected_client.name or 'Без имени' }}</strong>
-                        <div class="client-contacts" style="font-size: 12px; color: #6c757d;">
+                        <strong id="selectedClientName">{{ pre_selected_client.name or 'Без имени' }}</strong>
+                        <div class="client-contacts" id="selectedClientContacts" style="font-size: 12px; color: #6c757d;">
                             {% if pre_selected_client.contacts.phone %}📞 {{ pre_selected_client.contacts.phone }}<br>{% endif %}
                             {% if pre_selected_client.contacts.telegram %}📱 @{{ pre_selected_client.contacts.telegram }}<br>{% endif %}
                             {% if pre_selected_client.contacts.email %}✉️ {{ pre_selected_client.contacts.email }}{% endif %}
@@ -36,6 +36,7 @@
                     </button>
                 </div>
             </div>
+            <div id="selectedClientDisplay" style="display: none;"></div>
             
             <!-- Блок поиска (скрыт по умолчанию) -->
             <div id="clientSearchBlock" style="display: none;">
@@ -55,7 +56,13 @@
                     <input type="text" id="clientSearch" class="form-control" placeholder="Введите имя, телефон или telegram...">
                     <div id="clientSuggestions" class="client-suggestions"></div>
                 </div>
-                <div id="selectedClientDisplay" style="display: none;" class="selected-client"></div>
+                <div id="selectedClientDisplay" style="display: none;" class="selected-client">
+                    <div class="selected-client-info">
+                        <span class="selected-client-name" id="selectedClientName"></span>
+                        <span class="selected-client-contacts" id="selectedClientContacts"></span>
+                    </div>
+                    <button type="button" class="clear-client-btn" onclick="clearSelectedClient()">✕</button>
+                </div>
             </div>
             {% endif %}
 
@@ -71,7 +78,7 @@
                 <textarea id="description" name="description" rows="4" class="form-control"></textarea>
             </div>
 
-            <!-- Инструменты (языки/технологии) -->
+            <!-- Инструменты -->
             <div class="form-group">
                 <label for="instruments">Инструменты (через запятую)</label>
                 <input type="text" id="instruments" name="instruments" class="form-control" 
@@ -104,28 +111,54 @@
 {% block extra_js %}
 <script>
 let searchTimeout;
-let currentSearchQuery = '';
 
-// Обработка поиска клиента
+// Получаем элементы
 const clientSearch = document.getElementById('clientSearch');
 const suggestionsDiv = document.getElementById('clientSuggestions');
+const clientIdInput = document.getElementById('clientId');
+const selectedClientDisplay = document.getElementById('selectedClientDisplay');
+const selectedClientName = document.getElementById('selectedClientName');
+const selectedClientContacts = document.getElementById('selectedClientContacts');
 
-clientSearch.addEventListener('input', function() {
-    clearTimeout(searchTimeout);
-    const query = this.value.trim();
-    currentSearchQuery = query;
+// Функции для работы с клиентом
+function selectClient(id, name, contacts) {
+    clientIdInput.value = id;
+    selectedClientName.textContent = name;
+    selectedClientContacts.textContent = contacts;
+    selectedClientDisplay.style.display = 'flex';
     
-    if (query.length < 2) {
-        suggestionsDiv.style.display = 'none';
-        return;
+    if (clientSearch) {
+        clientSearch.style.display = 'none';
+        clientSearch.value = '';
     }
     
-    searchTimeout = setTimeout(() => {
-        searchClients(query);
-    }, 300);
-});
+    // Скрываем блок поиска, если он был открыт (для случая с pre_selected_client)
+    const clientSearchBlock = document.getElementById('clientSearchBlock');
+    if (clientSearchBlock) {
+        clientSearchBlock.style.display = 'none';
+    }
+    
+    suggestionsDiv.style.display = 'none';
+}
 
-// Поиск клиентов через API
+function clearSelectedClient() {
+    clientIdInput.value = '';
+    selectedClientDisplay.style.display = 'none';
+    
+    if (clientSearch) {
+        clientSearch.style.display = 'block';
+        clientSearch.value = '';
+        clientSearch.focus();
+    }
+    
+    // Показываем блок поиска (для случая с pre_selected_client)
+    const clientSearchBlock = document.getElementById('clientSearchBlock');
+    if (clientSearchBlock) {
+        clientSearchBlock.style.display = 'block';
+    }
+}
+
+// Поиск клиентов
 async function searchClients(query) {
     try {
         suggestionsDiv.innerHTML = '<div class="loading-suggestions">Поиск...</div>';
@@ -152,7 +185,6 @@ async function searchClients(query) {
     }
 }
 
-// Форматирование контактов для отображения
 function formatContacts(contacts) {
     if (!contacts) return '';
     const parts = [];
@@ -163,35 +195,6 @@ function formatContacts(contacts) {
     return parts.join(' | ');
 }
 
-// Выбор клиента
-function selectClient(id, name, contacts) {
-    document.getElementById('clientId').value = id;
-    document.getElementById('selectedClientName').textContent = name;
-    document.getElementById('selectedClientContacts').textContent = contacts;
-    document.getElementById('selectedClientDisplay').style.display = 'flex';
-    document.getElementById('clientSearch').style.display = 'none';
-    suggestionsDiv.style.display = 'none';
-    clientSearch.value = '';
-}
-
-{% if pre_selected_client %}
-function clearSelectedClient() {
-    document.getElementById('clientId').value = '';
-    document.querySelector('.selected-client').style.display = 'none';
-    document.getElementById('clientSearchBlock').style.display = 'block';
-    document.getElementById('clientSearch').focus();
-}
-{% else %}
-function clearSelectedClient() {
-    document.getElementById('clientId').value = '';
-    document.getElementById('selectedClientDisplay').style.display = 'none';
-    document.getElementById('clientSearch').style.display = 'block';
-    clientSearch.value = '';
-    clientSearch.focus();
-}
-{% endif %}
-
-// Экранирование HTML
 function escapeHtml(str) {
     if (!str) return '';
     return str
@@ -202,11 +205,28 @@ function escapeHtml(str) {
         .replace(/'/g, '&#39;');
 }
 
-// Отправка формы через API
+// Инициализация поиска (если поле существует)
+if (clientSearch) {
+    clientSearch.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        
+        if (query.length < 2) {
+            suggestionsDiv.style.display = 'none';
+            return;
+        }
+        
+        searchTimeout = setTimeout(() => {
+            searchClients(query);
+        }, 300);
+    });
+}
+
+// Отправка формы
 document.getElementById('orderForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    const clientId = document.getElementById('clientId').value;
+    const clientId = clientIdInput.value;
     if (!clientId) {
         alert('Пожалуйста, выберите клиента');
         return;
@@ -257,17 +277,12 @@ document.getElementById('orderForm').addEventListener('submit', async function(e
 function resetForm() {
     document.getElementById('orderForm').reset();
     clearSelectedClient();
-    document.getElementById('title').value = '';
-    document.getElementById('description').value = '';
-    document.getElementById('instruments').value = '';
-    document.getElementById('contract_price').value = '';
-    document.getElementById('deadline_date').value = '';
 }
 
 // Закрытие подсказок при клике вне
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.client-search-container')) {
-        suggestionsDiv.style.display = 'none';
+        if (suggestionsDiv) suggestionsDiv.style.display = 'none';
     }
 });
 </script>

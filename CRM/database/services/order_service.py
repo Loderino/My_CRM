@@ -21,9 +21,13 @@ class OrderService:
     
     # ========== ORDERS ==========
 
-    async def get_all_orders(self, skip, limit, order_by) -> list[Order]:
+    async def get_all_orders(self, skip: int, limit: int, order_by: str) -> list[Order]:
         """Получить все заказы с пагинацией"""
         return await self.order_repo.get_all(skip, limit, order_by)
+    
+    async def find_orders_by_name(self, skip: int, limit: int, search: str) -> list[Order]:
+        """Получить заказы по названию или описанию"""
+        return await self.order_repo.get_filtered(skip, limit, search)
 
     async def get_order(self, order_id: int) -> Optional[Order]:
         """Получить детальную информацию о заказе по id"""
