@@ -27,7 +27,7 @@
                         <strong id="selectedClientName">{{ pre_selected_client.name or 'Без имени' }}</strong>
                         <div class="client-contacts" id="selectedClientContacts" style="font-size: 12px; color: #6c757d;">
                             {% if pre_selected_client.contacts.phone %}📞 {{ pre_selected_client.contacts.phone }}<br>{% endif %}
-                            {% if pre_selected_client.contacts.telegram %}📱 @{{ pre_selected_client.contacts.telegram }}<br>{% endif %}
+                            {% if pre_selected_client.contacts.telegram %}📱 {{ pre_selected_client.contacts.telegram }}<br>{% endif %}
                             {% if pre_selected_client.contacts.email %}✉️ {{ pre_selected_client.contacts.email }}{% endif %}
                         </div>
                     </div>

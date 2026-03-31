@@ -30,9 +30,14 @@
             <button class="btn btn-primary" onclick="applySearch()">
                 <i class="fas fa-search"></i> Найти
             </button>
+            {% if search_query %}
+            <button class="btn btn-secondary" onclick="clearSearch()">
+                <i class="fas fa-times"></i> Сбросить
+            </button>
+            {% endif %}
         </div>
         
-        <!-- Фильтры скрыты, но оставлены для будущего использования -->
+        <!-- Фильтры скрыты, но оставлены для будущего -->
         <div class="filters-row" style="display: none;">
             <div class="filter-group">
                 <label>Период регистрации:</label>
@@ -43,7 +48,6 @@
                     <option value="month">За месяц</option>
                 </select>
             </div>
-            
             <div class="filter-group">
                 <label>С заказами:</label>
                 <select id="ordersFilter" class="form-control">
@@ -71,7 +75,7 @@
             </thead>
             <tbody>
                 {% for client in clients %}
-                <tr class="client-row" data-client-id="detail/{{ client.id }}">
+                <tr class="client-row" data-client-id="{{ client.id }}">
                     <td class="client-id">#{{ client.id }}</td>
                     <td class="client-name">
                         <strong>{{ client.name or 'Без имени' }}</strong>
@@ -82,31 +86,34 @@
                     <td class="client-contacts">
                         {% if client.contacts %}
                             <div class="contacts-badges">
-                                <!-- Телефон -->
                                 {% if client.contacts.phone %}
                                     <span class="contact-badge" title="Телефон">
                                         <i class="fas fa-phone"></i> {{ client.contacts.phone }}
                                     </span>
                                 {% endif %}
-                                
-                                <!-- Telegram -->
                                 {% if client.contacts.telegram %}
                                     <span class="contact-badge" title="Telegram">
                                         <i class="fab fa-telegram"></i> {{ client.contacts.telegram }}
                                     </span>
                                 {% endif %}
-                                
-                                <!-- VK -->
+                                {% if client.contacts.whatsapp %}
+                                    <span class="contact-badge" title="WhatsApp">
+                                        <i class="fab fa-whatsapp"></i> {{ client.contacts.whatsapp }}
+                                    </span>
+                                {% endif %}
+                                {% if client.contacts.email %}
+                                    <span class="contact-badge" title="Email">
+                                        <i class="fas fa-envelope"></i> {{ client.contacts.email }}
+                                    </span>
+                                {% endif %}
                                 {% if client.contacts.vk %}
                                     <span class="contact-badge" title="VK">
                                         <i class="fab fa-vk"></i> {{ client.contacts.vk }}
                                     </span>
                                 {% endif %}
-                                
-                                <!-- Avito (просто текст) -->
                                 {% if client.contacts.avito %}
                                     <span class="contact-badge" title="Avito">
-                                        📋 avito
+                                        <i class="fas fa-tag"></i> avito
                                     </span>
                                 {% endif %}
                             </div>
@@ -118,12 +125,9 @@
                     <td class="orders-sum">{{ client.orders_sum|default(0)|int }} ₽</td>
                     <td class="registration-date">{{ client.created_at.strftime('%d.%m.%Y') if client.created_at else '-' }}</td>
                     <td class="actions">
-                        <a href="/clients/detail/{{ client.id }}" class="btn-icon" title="Просмотр">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="/clients/detail/{{ client.id }}/edit" class="btn-icon" title="Редактировать">
-                            <i class="fas fa-edit"></i>
-                        </a>
+                        <button class="delete-btn" data-client-id="{{ client.id }}" data-client-name="{{ client.name or 'Без имени' }}" title="Удалить">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </td>
                 </tr>
                 {% else %}
@@ -139,7 +143,7 @@
         </table>
     </div>
 
-    <!-- Пагинация и настройки отображения -->
+    <!-- Пагинация -->
     <div class="pagination-panel">
         <div class="pagination-info">
             Показано {{ clients|length }} из {{ total_clients }} клиентов
@@ -147,7 +151,7 @@
         
         <div class="pagination-controls">
             {% if page > 1 %}
-                <a href="?page={{ page-1 }}&per_page={{ per_page }}&search={{ search_query }}&period={{ period }}&orders={{ orders_filter }}" 
+                <a href="?page={{ page-1 }}&per_page={{ per_page }}&search={{ search_query }}" 
                    class="pagination-btn">
                     <i class="fas fa-chevron-left"></i>
                 </a>
@@ -156,7 +160,7 @@
             <span class="page-info">Страница {{ page }} из {{ total_pages }}</span>
             
             {% if page < total_pages %}
-                <a href="?page={{ page+1 }}&per_page={{ per_page }}&search={{ search_query }}&period={{ period }}&orders={{ orders_filter }}"
+                <a href="?page={{ page+1 }}&per_page={{ per_page }}&search={{ search_query }}"
                    class="pagination-btn">
                     <i class="fas fa-chevron-right"></i>
                 </a>
@@ -174,8 +178,111 @@
         </div>
     </div>
 </div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div id="deleteModal" class="modal-overlay" style="display: none;">
+    <div class="modal-container">
+        <h3>🗑️ Удаление клиента</h3>
+        <p id="deleteModalText">Вы уверены, что хотите удалить этого клиента? Это действие нельзя отменить.</p>
+        <div class="modal-buttons">
+            <button class="modal-cancel" onclick="closeDeleteModal()">Отмена</button>
+            <button class="modal-confirm" onclick="executeDelete()">Удалить</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="/static/js/pages/clients.js"></script>
+<script>
+    let deleteClientId = null;
+    
+    // Поиск
+    function applySearch() {
+        const search = document.getElementById('searchInput').value;
+        const perPage = document.getElementById('perPageSelect').value;
+        const url = new URL(window.location.href);
+        url.searchParams.set('page', '1');
+        url.searchParams.set('per_page', perPage);
+        if (search) {
+            url.searchParams.set('search', search);
+        } else {
+            url.searchParams.delete('search');
+        }
+        window.location.href = url.toString();
+    }
+    
+    function clearSearch() {
+        window.location.href = window.location.pathname + '?page=1&per_page=' + document.getElementById('perPageSelect').value;
+    }
+    
+    // Поиск по Enter
+    document.getElementById('searchInput')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') applySearch();
+    });
+    
+    // Пагинация
+    function changePerPage(value) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('per_page', value);
+        url.searchParams.set('page', '1');
+        window.location.href = url.toString();
+    }
+    
+    // Клик по строке
+    document.querySelectorAll('.client-row').forEach(row => {
+        row.addEventListener('click', function(e) {
+            if (e.target.closest('.delete-btn')) return;
+            const clientId = this.dataset.clientId;
+            if (clientId) window.location.href = `/clients/detail/${clientId}`;
+        });
+    });
+    
+    // Удаление клиента
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            deleteClientId = this.dataset.clientId;
+            const clientName = this.dataset.clientName;
+            document.getElementById('deleteModalText').innerHTML = `Вы уверены, что хотите удалить клиента <strong>${clientName}</strong>? Это действие нельзя отменить.`;
+            document.getElementById('deleteModal').style.display = 'flex';
+        });
+    });
+    
+    function closeDeleteModal() {
+        deleteClientId = null;
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+    
+    async function executeDelete() {
+        if (!deleteClientId) return;
+        
+        try {
+            const response = await fetch(`/api/clients/${deleteClientId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                const error = await response.json();
+                alert('Ошибка: ' + (error.detail || 'Не удалось удалить клиента'));
+                closeDeleteModal();
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            alert('Ошибка при удалении клиента');
+            closeDeleteModal();
+        }
+    }
+    
+    // Закрытие модалки по Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && document.getElementById('deleteModal').style.display === 'flex') {
+            closeDeleteModal();
+        }
+    });
+</script>
 {% endblock %}

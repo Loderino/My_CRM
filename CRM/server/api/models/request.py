@@ -17,3 +17,13 @@ class OrderUpdateRequest(BaseModel):
     instruments: list[str] | None = None
     status: str | None = None
     progress: int | None = None
+
+class ClientRequest(BaseModel):
+    name: str
+    contacts: dict[str, str] | None = None
+    notes: str | None = None
+
+class ClientUpdateRequest(BaseModel):
+    name: str | None = None
+    contacts: dict[str, str] | None = None
+    notes: str | None = None

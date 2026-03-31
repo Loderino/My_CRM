@@ -3,16 +3,13 @@
 {% block title %}{{ client.name or 'Клиент' }} - CRM{% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="/static/css/clients.css">
+<link rel="stylesheet" href="/static/css/clients.css">
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
     <h1>👤 Профиль клиента</h1>
     <div>
-        <a href="/clients/{{ client.id }}/edit" class="btn btn-secondary">
-            <i class="fas fa-edit"></i> Редактировать
-        </a>
         <a href="/clients" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> К списку
         </a>
@@ -25,60 +22,108 @@
         <div class="client-avatar">
             <i class="fas fa-user"></i>
         </div>
+        
         <div class="client-name">
-            <h1>{{ client.name or 'Без имени' }}</h1>
+            <div class="editable-field" data-field="name">
+                <div class="display-value">
+                    <h1>{{ client.name or 'Без имени' }}</h1>
+                </div>
+                <div class="edit-input">
+                    <input type="text" class="name-input" value="{{ client.name or '' }}">
+                    <div class="edit-actions">
+                        <button class="btn-save btn-primary btn-sm">Сохранить</button>
+                        <button class="btn-cancel btn-secondary btn-sm">Отмена</button>
+                    </div>
+                </div>
+                <i class="fas fa-pencil-alt edit-icon"></i>
+            </div>
             <div class="client-id">ID: {{ client.id }}</div>
         </div>
         
-        {% if client.contacts %}
+        <!-- Контакты -->
         <div class="contacts-section">
             <h3>📞 Контакты</h3>
-            {% if client.contacts.phone %}
-            <a href="tel:{{ client.contacts.phone }}" class="contact-item">
-                <i class="fas fa-phone"></i> {{ client.contacts.phone }}
-            </a>
-            {% endif %}
-            {% if client.contacts.email %}
-            <a href="mailto:{{ client.contacts.email }}" class="contact-item">
-                <i class="fas fa-envelope"></i> {{ client.contacts.email }}
-            </a>
-            {% endif %}
-            {% if client.contacts.telegram %}
-            <a href="https://t.me/{{ client.contacts.telegram }}" target="_blank" class="contact-item">
-                <i class="fab fa-telegram"></i> @{{ client.contacts.telegram }}
-            </a>
-            {% endif %}
-            {% if client.contacts.vk %}
-            <a href="https://vk.com/{{ client.contacts.vk }}" target="_blank" class="contact-item">
-                <i class="fab fa-vk"></i> {{ client.contacts.vk }}
-            </a>
-            {% endif %}
-            {% if client.contacts.avito %}
-            <div class="contact-item">
-                <i class="fas fa-tag"></i> Avito: {{ client.contacts.avito }}
+            <div id="contacts-list" class="contacts-list">
+                {% if client.contacts %}
+                    {% for type, value in client.contacts.items() %}
+                        <div class="contact-item" data-contact-type="{{ type }}" data-contact-value="{{ value }}">
+                            <div class="contact-info">
+                                {% if type == 'phone' %}
+                                    <i class="fas fa-phone"></i>
+                                {% elif type == 'email' %}
+                                    <i class="fas fa-envelope"></i>
+                                {% elif type == 'telegram' %}
+                                    <i class="fab fa-telegram"></i>
+                                {% elif type == 'whatsapp' %}
+                                    <i class="fab fa-whatsapp"></i>
+                                {% elif type == 'vk' %}
+                                    <i class="fab fa-vk"></i>
+                                {% elif type == 'avito' %}
+                                    <i class="fas fa-tag"></i>
+                                {% else %}
+                                    <i class="fas fa-link"></i>
+                                {% endif %}
+                                <span class="contact-value">{{ value }}</span>
+                            </div>
+                            <div class="contact-actions">
+                                <button class="edit-contact" onclick="editContact(this)"><i class="fas fa-edit"></i></button>
+                                <button class="delete-contact" onclick="deleteContact(this)"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                            <div class="contact-edit-form">
+                                <input type="text" value="{{ value }}" class="contact-edit-input">
+                                <button class="btn-save-contact btn-primary btn-sm" onclick="saveContact(this, '{{ type }}')">Сохранить</button>
+                                <button class="btn-cancel-contact btn-secondary btn-sm" onclick="cancelContactEdit(this)">Отмена</button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
             </div>
-            {% endif %}
+            <button class="add-contact-btn" onclick="showAddContactForm()">
+                <i class="fas fa-plus"></i> Добавить контакт
+            </button>
+            <div id="add-contact-form" style="display: none; margin-top: 12px;">
+                <select id="new-contact-type" class="form-control" style="width: 100%; margin-bottom: 8px;">
+                    <option value="phone">📞 Телефон</option>
+                    <option value="email">✉️ Email</option>
+                    <option value="telegram">📱 Telegram</option>
+                    <option value="whatsapp">💬 WhatsApp</option>
+                    <option value="vk">📘 VK</option>
+                    <option value="avito">📋 Avito</option>
+                </select>
+                <input type="text" id="new-contact-value" class="form-control" placeholder="Значение контакта" style="margin-bottom: 8px;">
+                <div>
+                    <button class="btn-primary btn-sm" onclick="addContact()">Добавить</button>
+                    <button class="btn-secondary btn-sm" onclick="cancelAddContact()">Отмена</button>
+                </div>
+            </div>
         </div>
-        {% endif %}
         
+        <!-- Заметки -->
+        <div class="notes-section">
+            <h3>📝 Заметки</h3>
+            <div class="editable-field" data-field="notes">
+                <div class="display-value">
+                    <p>{{ client.notes or 'Нет заметок' }}</p>
+                </div>
+                <div class="edit-input">
+                    <textarea class="notes-input">{{ client.notes or '' }}</textarea>
+                    <div class="edit-actions">
+                        <button class="btn-save btn-primary btn-sm">Сохранить</button>
+                        <button class="btn-cancel btn-secondary btn-sm">Отмена</button>
+                    </div>
+                </div>
+                <i class="fas fa-pencil-alt edit-icon"></i>
+            </div>
+        </div>
+
         <div class="contacts-section">
             <h3>📅 Регистрация</h3>
             <div class="contact-item">
-                <i class="fas fa-calendar"></i> {{ client.created_at.strftime('%d.%m.%Y') if client.created_at else 'Неизвестно' }}
+                <div class="contact-info">
+                    <i class="fas fa-calendar"></i>
+                    <span>{{ client.created_at.strftime('%d.%m.%Y') if client.created_at else 'Неизвестно' }}</span>
+                </div>
             </div>
-        </div>
-        
-        {% if client.notes %}
-        <div class="notes-section">
-            <h3>📝 Заметки</h3>
-            <p>{{ client.notes }}</p>
-        </div>
-        {% endif %}
-        
-        <div class="action-buttons">
-            <a href="/orders/create?client_id={{ client.id }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus"></i> Новый заказ
-            </a>
         </div>
     </div>
     
@@ -90,6 +135,11 @@
                 Всего: {{ orders|length }}
             </div>
         </div>
+        <div class="action-buttons" style="margin-bottom: 1rem;">
+            <a href="/orders/create?client_id={{ client.id }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Новый заказ
+            </a>
+        </div>
         
         {% if orders %}
         <table class="orders-table">
@@ -100,7 +150,6 @@
                     <th>Статус</th>
                     <th>Сумма</th>
                     <th>Дедлайн</th>
-                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -116,11 +165,6 @@
                     </td>
                     <td class="order-sum">{{ "{:,.0f}".format(order.contract_price) if order.contract_price else '—' }} ₽</td>
                     <td>{{ order.deadline_date.strftime('%d.%m.%Y') if order.deadline_date else '—' }}</td>
-                    <td>
-                        <a href="/orders/{{ order.id }}" class="btn-icon" onclick="event.stopPropagation()">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -134,4 +178,198 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+    const CLIENT_ID = {{ client.id }};
+    
+    // Обработка редактирования полей (имя, заметки)
+    document.querySelectorAll('.editable-field').forEach(field => {
+        const editIcon = field.querySelector('.edit-icon');
+        if (editIcon) {
+            editIcon.addEventListener('click', () => {
+                field.classList.add('editing');
+            });
+        }
+        
+        const cancelBtn = field.querySelector('.btn-cancel');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                field.classList.remove('editing');
+            });
+        }
+        
+        const saveBtn = field.querySelector('.btn-save');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', async () => {
+                const fieldName = field.dataset.field;
+                let updateData = {};
+                let value;
+                
+                switch (fieldName) {
+                    case 'name':
+                        updateData["name"] = field.querySelector('.name-input').value;
+                        break;
+                    case 'notes':
+                        updateData["notes"] = field.querySelector('.notes-input').value;
+                        break;
+                    default:
+                        return;
+                }
+                
+                try {
+                    const response = await fetch(`/api/clients/${CLIENT_ID}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updateData)
+                    });
+                    
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        const error = await response.json();
+                        alert('Ошибка: ' + (error.detail || 'Не удалось обновить'));
+                    }
+                } catch (error) {
+                    alert('Ошибка: ' + error.message);
+                }
+            });
+        }
+    });
+    
+    // Редактирование контакта
+    function editContact(btn) {
+        const contactItem = btn.closest('.contact-item');
+        const editForm = contactItem.querySelector('.contact-edit-form');
+        const contactInfo = contactItem.querySelector('.contact-info');
+        const contactActions = contactItem.querySelector('.contact-actions');
+        
+        contactInfo.style.display = 'none';
+        contactActions.style.display = 'none';
+        editForm.style.display = 'block';
+    }
+    
+    function cancelContactEdit(btn) {
+        const contactItem = btn.closest('.contact-item');
+        const editForm = contactItem.querySelector('.contact-edit-form');
+        const contactInfo = contactItem.querySelector('.contact-info');
+        const contactActions = contactItem.querySelector('.contact-actions');
+        
+        contactInfo.style.display = 'flex';
+        contactActions.style.display = 'flex';
+        editForm.style.display = 'none';
+    }
+    
+    async function saveContact(btn, contactType) {
+        const contactItem = btn.closest('.contact-item');
+        const input = contactItem.querySelector('.contact-edit-input');
+        const newValue = input.value.trim();
+        
+        if (!newValue) {
+            alert('Значение не может быть пустым');
+            return;
+        }
+        
+        // Получаем текущие контакты
+        const response = await fetch(`/api/clients/${CLIENT_ID}`);
+        const client = await response.json();
+        const contacts = client.contacts || {};
+        contacts[contactType] = newValue;
+        
+        try {
+            const updateResponse = await fetch(`/api/clients/${CLIENT_ID}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ contacts: contacts })
+            });
+            
+            if (updateResponse.ok) {
+                window.location.reload();
+            } else {
+                const error = await updateResponse.json();
+                alert('Ошибка: ' + (error.detail || 'Не удалось обновить контакт'));
+            }
+        } catch (error) {
+            alert('Ошибка: ' + error.message);
+        }
+    }
+    
+    async function deleteContact(btn) {
+        if (!confirm('Удалить этот контакт?')) return;
+        
+        const contactItem = btn.closest('.contact-item');
+        const contactType = contactItem.dataset.contactType;
+        
+        const response = await fetch(`/api/clients/${CLIENT_ID}`);
+        const client = await response.json();
+        const contacts = client.contacts || {};
+        delete contacts[contactType];
+        
+        try {
+            const updateResponse = await fetch(`/api/clients/${CLIENT_ID}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ contacts: contacts })
+            });
+            
+            if (updateResponse.ok) {
+                window.location.reload();
+            } else {
+                const error = await updateResponse.json();
+                alert('Ошибка: ' + (error.detail || 'Не удалось удалить контакт'));
+            }
+        } catch (error) {
+            alert('Ошибка: ' + error.message);
+        }
+    }
+    
+    function showAddContactForm() {
+        document.getElementById('add-contact-form').style.display = 'block';
+    }
+    
+    function cancelAddContact() {
+        document.getElementById('add-contact-form').style.display = 'none';
+        document.getElementById('new-contact-type').value = 'phone';
+        document.getElementById('new-contact-value').value = '';
+    }
+    
+    async function addContact() {
+        const contactType = document.getElementById('new-contact-type').value;
+        const contactValue = document.getElementById('new-contact-value').value.trim();
+        
+        if (!contactValue) {
+            alert('Введите значение контакта');
+            return;
+        }
+        
+        const response = await fetch(`/api/clients/${CLIENT_ID}`);
+        const client = await response.json();
+        const contacts = client.contacts || {};
+        contacts[contactType] = contactValue;
+        
+        try {
+            const updateResponse = await fetch(`/api/clients/${CLIENT_ID}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ contacts: contacts })
+            });
+            
+            if (updateResponse.ok) {
+                window.location.reload();
+            } else {
+                const error = await updateResponse.json();
+                alert('Ошибка: ' + (error.detail || 'Не удалось добавить контакт'));
+            }
+        } catch (error) {
+            alert('Ошибка: ' + error.message);
+        }
+    }
+</script>
 {% endblock %}

@@ -27,3 +27,9 @@ class ClientService:
         client = await self.client_repo.create(**kwargs)
         await self.session.commit()
         return client
+    
+    async def update_client(self, client_id: int, **kwargs) -> Client:
+        """Обновить клиента"""
+        client = await self.client_repo.update(client_id, **kwargs)
+        await self.session.commit()
+        return client

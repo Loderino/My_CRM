@@ -40,3 +40,10 @@ class DetailedOrderResponse(OrderResponse):
     status_logs: list[StatusLogResponse]
     progress_logs: list[ProgressLogResponse]
     payments: list[PaymentResponse]
+
+class ClientResponse(BaseModel):
+    id: int
+    name: str
+    notes: str
+    contacts: dict[str, str]
+    created_at: datetime

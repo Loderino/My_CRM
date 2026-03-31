@@ -30,7 +30,7 @@ async def patch_order(
     order_id: int,
     data: OrderUpdateRequest,
     order_service: OrderService = Depends(get_service(OrderService))
-):
+) -> OrderResponse:
     update_data = data.model_dump(exclude_none=True)
     updated_order = await order_service.update_order(order_id, **update_data)
     return updated_order
