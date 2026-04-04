@@ -1,10 +1,10 @@
 from typing import Literal
 from fastapi import APIRouter, Depends, Body
 
-from CRM.database.models import OrderStatus, PaymentType
+from CRM.database.models import OrderStatus
 from CRM.database.services.order_service import OrderService
 from CRM.server.api.dependencies import get_service
-from CRM.server.api.models.request import OrderRequest, OrderUpdateRequest
+from CRM.server.api.models.request import OrderRequest, OrderUpdateRequest, PaymentForOrderRequest
 from CRM.server.api.models.response import DetailedOrderResponse, OrderResponse, PaymentResponse, ProgressLogResponse, StatusLogResponse
 
 orders_router = APIRouter()
@@ -89,8 +89,7 @@ async def get_order_payments(
 @orders_router.post("/{order_id}/payments")
 async def create_payment(
     order_id: int,
-    type: Literal[PaymentType.PAYMENT, PaymentType.REFUND, PaymentType.TIP],
-    amount: float,
+    payment_data: PaymentForOrderRequest,
     order_service: OrderService = Depends(get_service(OrderService))
     ) -> PaymentResponse:
-    return await order_service.create_payment(order_id, type, amount)
+    return await order_service.create_payment(order_id, payment_data.type, payment_data.amount)

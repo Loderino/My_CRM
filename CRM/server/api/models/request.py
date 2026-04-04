@@ -1,5 +1,8 @@
+from typing import Literal
 from datetime import datetime
 from pydantic import BaseModel
+
+from CRM.database.models import PaymentType
 
 class OrderRequest(BaseModel):
     client_id: int
@@ -27,3 +30,7 @@ class ClientUpdateRequest(BaseModel):
     name: str | None = None
     contacts: dict[str, str] | None = None
     notes: str | None = None
+
+class PaymentForOrderRequest(BaseModel):
+    type: Literal[PaymentType.PAYMENT, PaymentType.REFUND, PaymentType.TIP]
+    amount: float

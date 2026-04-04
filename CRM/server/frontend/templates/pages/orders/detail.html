@@ -261,11 +261,35 @@
             {% else %}
             <p class="text-muted">Платежей пока нет</p>
             {% endif %}
+            
+            <!-- Кнопка добавления платежа -->
             <div class="action-buttons" style="margin-top: 1rem;">
-                <a href="/orders/{{ order.id }}/payments/add" class="btn btn-primary btn-sm" style="width: 100%;">
+                <button class="btn-add-payment-inline" onclick="openPaymentModal()">
                     <i class="fas fa-plus"></i> Добавить платёж
-                </a>
+                </button>
             </div>
+        </div>
+    </div>
+</div>
+
+<div id="paymentModal" class="payment-modal">
+    <div class="payment-modal-content">
+        <h3>💳 Добавить платёж</h3>
+        <div class="form-group">
+            <label for="paymentType">Тип платежа</label>
+            <select id="paymentType">
+                <option value="payment">💵 Оплата</option>
+                <option value="tip">🎁 Чаевые/Бонус</option>
+                <option value="refund">↩️ Возврат</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="paymentAmount">Сумма (₽)</label>
+            <input type="number" id="paymentAmount" step="1" min="1" placeholder="Введите сумму">
+        </div>
+        <div class="payment-modal-buttons">
+            <button class="btn-payment-cancel" onclick="closePaymentModal()">Отмена</button>
+            <button class="btn-payment-submit" onclick="submitPayment()">Добавить</button>
         </div>
     </div>
 </div>
@@ -390,6 +414,60 @@ async function confirmDelete() {
         } catch (error) {
             alert('Ошибка: ' + error.message);
         }
+    }
+}
+
+// Модальное окно платежа
+function openPaymentModal() {
+    document.getElementById('paymentModal').style.display = 'flex';
+    document.getElementById('paymentAmount').value = '';
+    document.getElementById('paymentType').value = 'payment';
+}
+
+function closePaymentModal() {
+    document.getElementById('paymentModal').style.display = 'none';
+}
+
+async function submitPayment() {
+    const paymentType = document.getElementById('paymentType').value;
+    const paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
+    
+    if (!paymentAmount || paymentAmount <= 0) {
+        alert('Введите корректную сумму');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/orders/${ORDER_ID}/payments`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: paymentType,
+                amount: paymentAmount
+            })
+        });
+        
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            const error = await response.json();
+            alert('Ошибка: ' + (error.detail || 'Не удалось добавить платёж'));
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка при добавлении платежа');
+    }
+    
+    closePaymentModal();
+}
+
+// Закрытие модалки по клику вне
+window.onclick = function(event) {
+    const modal = document.getElementById('paymentModal');
+    if (event.target === modal) {
+        closePaymentModal();
     }
 }
 </script>

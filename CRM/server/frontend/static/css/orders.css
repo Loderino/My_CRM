@@ -775,3 +775,117 @@
 .modal-cancel:hover {
     background: #dee2e6;
 }
+
+.payment-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.payment-modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.payment-modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.payment-modal-content .form-group {
+    margin-bottom: 16px;
+}
+
+.payment-modal-content label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #495057;
+}
+
+.payment-modal-content select,
+.payment-modal-content input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.payment-modal-content select:focus,
+.payment-modal-content input:focus {
+    outline: none;
+    border-color: #2c3e50;
+}
+
+.payment-modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.payment-modal-buttons button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-payment-submit {
+    background: #2c3e50;
+    color: white;
+}
+
+.btn-payment-submit:hover {
+    background: #34495e;
+}
+
+.btn-payment-cancel {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.btn-payment-cancel:hover {
+    background: #dee2e6;
+}
+
+/* Кнопка добавления платежа в карточке */
+.btn-add-payment-inline {
+    width: 100%;
+    padding: 10px;
+    background: #f8f9fa;
+    border: 1px dashed #2c3e50;
+    border-radius: 6px;
+    color: #2c3e50;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.btn-add-payment-inline:hover {
+    background: #e9ecef;
+    border-color: #2c3e50;
+}
+
+/* Стили для платежей в карточке */
+.payment-amount.plus {
+    color: #28a745;
+}
+
+.payment-amount.minus {
+    color: #dc3545;
+}
