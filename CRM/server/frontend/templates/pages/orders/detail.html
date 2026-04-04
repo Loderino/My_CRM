@@ -132,12 +132,14 @@
         </div>
         
         <div class="progress-container">
-            <h3>📊 Прогресс</h3>
+            <h3>📊 Прогрес</h3>
             <div class="editable-field" data-field="progress">
                 <div class="display-value">
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: {{ progress_history[-1].percentage if progress_history else 0 }}%">
-                            {{ progress_history[-1].percentage if progress_history else 0 }}%
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: {{ progress_history[-1].percentage if progress_history else 0 }}%">
+                                <span class="progress-bar-text">{{ progress_history[-1].percentage if progress_history else 0 }}%</span>
+                            </div>
                         </div>
                     </div>
                 </div>
